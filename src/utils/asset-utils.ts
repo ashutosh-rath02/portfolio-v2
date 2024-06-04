@@ -7,14 +7,15 @@ export const assets = {
     "https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2Fe82b4bbd5a7c45b49897b9570893dfe2",
   react:
     "https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2F95c70a06f779481a957c2b384e3a270d",
-  svelte:
-    "https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2Ffbe9dfb6bb09448ba4fe5feb4bb0e53e?format=webp",
+  linux:
+    "https://res.cloudinary.com/dhnkuonev/image/upload/v1717469526/portfolio/linux-svgrepo-com_kllrad.svg",
   tailwind:
     "https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2F8d0b6724f6f6496dbf124bfc3af2a0b0?format=webp",
-  vue: "https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2F73a54a19443e48fab077e6f21687cd20?format=webp",
-  qwik: "https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2Fddb7b5acc2d747f198e8ed90dc245f1a",
-  safari:
-    "https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2F22ac9809c08e438db8e5716758a0b4ee?format=webp",
+  mongodb:
+    "https://res.cloudinary.com/dhnkuonev/image/upload/v1717443381/portfolio/mongodb-svgrepo-com_pipkmu.svg",
+  next: "https://res.cloudinary.com/dhnkuonev/image/upload/v1717443074/portfolio/nextjs-icon-svgrepo-com_cizqtr.svg",
+  typescript:
+    "https://res.cloudinary.com/dhnkuonev/image/upload/v1717469337/portfolio/typescript-logo-svgrepo-com_awqrnz.svg",
   chrome:
     "https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2Ff4c72f33c40b4b7bb220cffbc17ef2c2",
   mobile:
@@ -27,4 +28,9 @@ export const assets = {
     "https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2F8e5e45f981514bac840e2a5f1d46e579",
   cursor:
     "https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2Fbba6d6b3473d436098e3637650f64ee2",
+  node: "https://res.cloudinary.com/dhnkuonev/image/upload/v1717469526/portfolio/nodejs-icon-svgrepo-com_xko1bk.svg",
+  supabase:
+    "https://res.cloudinary.com/dhnkuonev/image/upload/v1717469563/portfolio/supabase-logo-icon_dmcgax.svg",
+  docker:
+    "https://res.cloudinary.com/dhnkuonev/image/upload/v1717469524/portfolio/docker-svgrepo-com_jdwufo.svg",
 };

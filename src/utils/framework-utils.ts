@@ -1,13 +1,17 @@
 export const frameworks = [
   "react",
-  "chrome",
-  "qwik",
-  "mobile",
+  "next",
+  "mongodb",
   "tailwind",
+  "supabase",
+  "typescript",
+  "linux",
+  "chrome",
+  "node",
   "desktop",
-  "vue",
-  "safari",
-  "svelte",
+  "mobile",
+  "docker",
 ] as const;
 
 export type Framework = (typeof frameworks)[number];
+//docker, supabase, linux, node
