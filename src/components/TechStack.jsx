@@ -3,7 +3,8 @@ import { icons } from "../../config/content/icons";
 
 export function TechStack() {
   return (
-    <div className="mx-auto flex flex-col justify-center">
+    <div className="flex flex-col items-start">
+      <span className="heading mt-4 md:mt-32 underline">My Tech Stack🧑‍💻</span>
       <HoverEffect
         items={icons.map((icon) => ({
           title: icon.name,

@@ -38,32 +38,30 @@ export default function HeroSection() {
       {/* Background color */}
       <div
         className={cn(
-          "fixed inset-0 transition-color delay-100 duration-700 opacity-25 -z-10",
-          {
-            "bg-purple-300": currentFramework === "next",
-            "bg-sky-300": currentFramework === "typescript",
-            "bg-yellow-300": currentFramework === "chrome",
-            "bg-teal-300": currentFramework === "tailwind",
-            "bg-blue-300": currentFramework === "react",
-            "bg-green-600": currentFramework === "mongodb",
-            "bg-orange-400": currentFramework === "linux",
-            "bg-red-300": currentFramework === "mobile",
-            "bg-neutral-300": currentFramework === "desktop",
-            "bg-green-900": currentFramework === "node",
-            "bg-lime-300": currentFramework === "supabase",
-            "bg-blue-900": currentFramework === "docker",
-          }
+          "fixed inset-0 transition-color delay-100 duration-700 opacity-25 -z-10"
+          // {
+          //   "bg-purple-300": currentFramework === "next",
+          //   "bg-sky-300": currentFramework === "typescript",
+          //   "bg-yellow-300": currentFramework === "chrome",
+          //   "bg-teal-300": currentFramework === "tailwind",
+          //   "bg-blue-300": currentFramework === "react",
+          //   "bg-green-600": currentFramework === "mongodb",
+          //   "bg-orange-400": currentFramework === "linux",
+          //   "bg-red-300": currentFramework === "mobile",
+          //   "bg-neutral-300": currentFramework === "desktop",
+          //   "bg-green-900": currentFramework === "node",
+          //   "bg-lime-300": currentFramework === "supabase",
+          //   "bg-blue-900": currentFramework === "docker",
+          // }
         )}
       />
-      {/* Grid */}
-      <div
+      {/* <div
         style={{
           backgroundSize: "50px",
           backgroundImage: `url(${assets.square})`,
         }}
         className="fixed inset-0 opacity-30 -z-10"
       />
-      {/* Gradient */}
       <Image
         width={1200}
         height={1200}
@@ -72,15 +70,14 @@ export default function HeroSection() {
         className="fixed inset-0 w-screen h-screen object-cover -z-10"
         src={assets.gradient}
       />
-      {/* Reveal */}
       <div
         className={cn(
           "bg-black fixed inset-0 transition-opacity duration-1000 -z-10",
           !showBackground ? "opacity-100" : "opacity-0"
         )}
-      />
+      /> */}
       {/* Content */}
-      <div className="max-w-7xl mt-20 mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mt-20 mx-auto px-4 sm:px-6 lg:px-">
         <div className="flex flex-col md:flex-row items-center relative z-10">
           {/* Text */}
           <div className="w-full md:w-1/2 text-center md:text-left mb-8 md:mb-0">
