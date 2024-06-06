@@ -38,7 +38,7 @@ export default function HeroSection() {
       {/* Background color */}
       <div
         className={cn(
-          "fixed inset-0 transition-color delay-100 duration-700 opacity-25",
+          "fixed inset-0 transition-color delay-100 duration-700 opacity-25 -z-10",
           {
             "bg-purple-300": currentFramework === "next",
             "bg-sky-300": currentFramework === "typescript",
@@ -61,7 +61,7 @@ export default function HeroSection() {
           backgroundSize: "50px",
           backgroundImage: `url(${assets.square})`,
         }}
-        className="fixed inset-0 opacity-30"
+        className="fixed inset-0 opacity-30 -z-10"
       />
       {/* Gradient */}
       <Image
@@ -69,13 +69,13 @@ export default function HeroSection() {
         height={1200}
         role="presentation"
         alt="gradient background"
-        className="fixed inset-0 w-screen h-screen object-cover"
+        className="fixed inset-0 w-screen h-screen object-cover -z-10"
         src={assets.gradient}
       />
       {/* Reveal */}
       <div
         className={cn(
-          "bg-black fixed inset-0 transition-opacity duration-1000",
+          "bg-black fixed inset-0 transition-opacity duration-1000 -z-10",
           !showBackground ? "opacity-100" : "opacity-0"
         )}
       />
