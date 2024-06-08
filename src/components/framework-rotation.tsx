@@ -9,7 +9,7 @@ export const FrameworkRotation = ({
   currentFramework: Framework;
 }) => {
   return (
-    <div className="mx-2 -mt-2 align-middle inline-flex relative h-[40px] w-[40px] md:h-[80px] md:w-[80px]">
+    <div className="mx-2 -mt-2 align-middle inline-flex relative h-[40px] w-[40px] md:h-[70px] md:w-[70px]">
       {frameworks.map((name, index) => (
         <Image
           key={name}

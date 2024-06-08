@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import SectionWrapper from "@/components/SectionWrapper";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -39,6 +40,7 @@ export default function RootLayout({
             <Navbar />
             {children}
           </SectionWrapper>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

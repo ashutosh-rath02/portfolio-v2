@@ -106,14 +106,23 @@
   }
 }
 
-.clip-polygon1 {
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+/* Width */
+::-webkit-scrollbar {
+  width: 10px;
 }
 
-.clip-polygon2 {
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.clip-polygon3 {
-  clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #1f2937;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
