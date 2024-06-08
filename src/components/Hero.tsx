@@ -82,14 +82,14 @@ export default function HeroSection() {
           {/* Content */}
           <div className="flex flex-col md:flex-row items-center">
             {/* Badge */}
-            <div className="absolute top-0 md:top-12 left-6 mt-[-1.5rem] ml-[-1.5rem] flex items-center border-2 px-2 md:px-4 rounded-3xl py-0 md:py-2">
+            <div className="absolute top-0 md:top-2 left-6 mt-[-1.5rem] ml-[-1.5rem] flex items-center border-2 px-2 md:px-4 rounded-3xl py-0 md:py-2">
               <div className="w-4 h-4 rounded-full bg-green-500 animate-pulse mr-2"></div>
               <p className="text-green-500 font-bold">Available for work</p>
             </div>
             {/* Text */}
-            <div className="w-full md:w-1/2 text-center md:text-left mb-8 md:mb-0">
+            <div className="w-full md:w-1/2 text-center flex flex-col items-start justify-center md:text-left mb-8 md:mb-0">
               <h1
-                className={`text-3xl md:text-5xl leading-snug mb-4 ${poppins.className}`}
+                className={`text-3xl md:text-4xl leading-snug mb-4 ${poppins.className}`}
               >
                 Transforming Ideas into Reality
               </h1>
@@ -118,8 +118,8 @@ export default function HeroSection() {
                   "border-blue-900": currentFramework === "docker",
                 })}
                 src="https://res.cloudinary.com/dhnkuonev/image/upload/v1717425040/portfolio/Ashutosh_Rath_yh8rhv.jpg"
-                width="400"
-                height="400"
+                width="300"
+                height="300"
               />
             </div>
           </div>

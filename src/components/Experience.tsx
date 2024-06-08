@@ -7,10 +7,10 @@ const ExperienceSection = () => {
   const [selectedCompany, setSelectedCompany] = useState(experiences[0]);
 
   return (
-    <section className="mt-24 mx-auto min-h-96">
+    <section className="mt-24 mx-auto min-h-[28rem]">
       <span className="heading">Work Experience🥼</span>
       <div className="bg-gradient-to-r from-purple-500 to-indigo-500 h-1 w-16 mb-4"></div>
-      <div className="flex flex-col md:flex-row rounded-lg overflow-hidden shadow-lg gap-12">
+      <div className="flex flex-col md:flex-row rounded-lg overflow-hidden shadow-lg gap-12 mt-12">
         <div className="flex-shrink-0 w-full md:w-1/3">
           {experiences.map((exp, index) => (
             <motion.div
