@@ -7,8 +7,9 @@ const ExperienceSection = () => {
   const [selectedCompany, setSelectedCompany] = useState(experiences[0]);
 
   return (
-    <section className="mt-12 mx-auto">
-      <h2 className="text-4xl font-bold text-center mb-12">Experience</h2>
+    <section className="mt-24 mx-auto min-h-96">
+      <span className="heading">Work Experience🥼</span>
+      <div className="bg-gradient-to-r from-purple-500 to-indigo-500 h-1 w-16 mb-4"></div>
       <div className="flex flex-col md:flex-row rounded-lg overflow-hidden shadow-lg gap-12">
         <div className="flex-shrink-0 w-full md:w-1/3">
           {experiences.map((exp, index) => (
@@ -91,7 +92,7 @@ const experiences = [
   },
   {
     role: "Full Stack Developer",
-    company: "LesGo · Internship",
+    company: "LesGo",
     period: "Dec 2023 - Mar 2024 · 4 mos",
     location: "Bengaluru, Karnataka, India · Remote",
     descriptionPoints: [
@@ -110,7 +111,7 @@ const experiences = [
   },
   {
     role: "Frontend Developer",
-    company: "Stealth Mode AI Startup · Internship",
+    company: "Stealth Mode AI Startup",
     period: "Oct 2023 - Dec 2023 · 3 mos",
     location: "Remote",
     descriptionPoints: [
