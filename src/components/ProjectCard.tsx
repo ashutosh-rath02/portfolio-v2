@@ -10,7 +10,7 @@ function Projects() {
       {topProjects.map((project, index) => (
         <div
           key={index}
-          className="shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl transition-transform transform hover:scale-105 hover:shadow-2xl duration-300 relative overflow-hidden flex flex-col justify-between"
+          className="shadow-lg bg-white dark:bg-gray-800  dark:border-gray-700 rounded-xl transition-transform transform hover:scale-105 hover:shadow-2xl duration-300 relative overflow-hidden flex flex-col justify-between"
         >
           <figure className="relative">
             <img
