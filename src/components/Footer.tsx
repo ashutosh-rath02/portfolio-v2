@@ -44,8 +44,8 @@ const Footer = () => {
             <span className="text-gray-400"> 💻</span> by Ashutosh Rath
           </p>
         </div>
-        <div className="md:w-1/2 flex flex-col gap-8 justify-between items-start md:items-end">
-          <div className="mb-4 md:mb-0 items-start md:items-end text-right">
+        <div className="md:w-1/2 w-full flex flex-col gap-8 items-center md:items-end">
+          <div className="mb-4 md:mb-0 items-start md:items-end text-right hidden md:block">
             <Link href={"/"}>
               <p className="font-semibold cursor-pointer">About</p>
             </Link>
