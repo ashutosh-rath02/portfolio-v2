@@ -1,6 +1,6 @@
 import Link from "next/link";
 import React from "react";
-import { projectsData } from "../../config/content/projects";
+import { projectsData } from "../../content/projects";
 
 function Projects() {
   const topProjects = projectsData.slice(0, 4);

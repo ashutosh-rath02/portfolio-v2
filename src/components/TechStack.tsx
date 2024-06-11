@@ -1,5 +1,5 @@
 import { HoverEffect } from "./card-hover-effect";
-import { icons } from "../../config/content/icons";
+import { icons } from "../../content/icons";
 
 export function TechStack() {
   return (

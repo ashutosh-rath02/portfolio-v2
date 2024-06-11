@@ -119,7 +119,7 @@ export default function HeroSection() {
                   "border-lime-300": currentFramework === "supabase",
                   "border-blue-900": currentFramework === "docker",
                 })}
-                src="https://res.cloudinary.com/dhnkuonev/image/upload/v1717425040/portfolio/Ashutosh_Rath_yh8rhv.jpg"
+                src="https://res.cloudinary.com/dhnkuonev/image/upload/v1717426428/portfolio/unnamed_bppmz7.png"
                 width="350"
                 height="350"
               />

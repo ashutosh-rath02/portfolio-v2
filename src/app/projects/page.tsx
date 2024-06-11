@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 import React, { useState } from "react";
-import { projectsData } from "../../../config/content/projects";
+import { projectsData } from "../../../content/projects";
 
 type Project = {
   title: string;
