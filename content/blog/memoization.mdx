@@ -1,0 +1,106 @@
+---
+title: "Memoization : Making Your Code Smarter So You Don’t Have to Be"
+description: Memoization is a fancy way of saying “remembering stuff so you don’t have to do it again.”
+date: 2023-05-13
+published: true
+---
+
+![](https://miro.medium.com/v2/resize:fit:828/format:webp/1*DKBgCDaxeqPORHjynFzQXA.png "Memoization")
+
+# Memoization
+
+Even the Medium text-editor feels that the word is incorrect. If you are seeing this word for the first time you may confuse it with “memorization” but yeah there’s no “r” in it. Memoization is a fancy way of saying “remembering stuff so you don’t have to do it again.” And who doesn’t like a good shortcut? In this article we are going to learn about where to use, how to use and when to use memoization along with some code snippets to get clear about what we are learning. Let’s Start🚀🚀!!
+
+# Understanding Memoization
+
+First things first, what is memoization? Memoization is a technique used in programming to store the results of expensive function calls and return the cached result when the same inputs occur again. It’s like having a mental note of the answer to a problem, so you don’t have to do the calculations every single time.
+
+To understand this more clearly let us take a very common example, fibonacci series:
+
+```jsx {9} showLineNumbers
+let cache = {};
+
+function fibonacci(num) {
+  if (num <= 1) {
+    return num;
+  } else if (cache[num]) {
+    return cache[num];
+  } else {
+    cache[num] = fibonacci(num - 1) + fibonacci(num - 2);
+    return cache[num];
+  }
+}
+```
+
+_In this case, the fibonacci() function generates Fibonacci numbers recursively. However, the recursive nature of the function means that it can quickly become very slow for larger values of num. By using memoization, we can cache the results of the function and avoid redundant . Here we are using an object called cache to store the results of the function. If the function is called with a number that already exists in the cache, we can return the cached result instead of recalculating it._
+
+We can see a real world application of memoization in javascript where we are going to make an API fetch request,
+
+```jsx showLineNumbers
+let cache = {};
+
+function getDataFromAPI(endpoint) {
+  if (cache[endpoint]) {
+    return Promise.resolve(cache[endpoint]);
+  } else {
+    return fetch(endpoint)
+      .then((response) => response.json())
+      .then((data) => {
+        cache[endpoint] = data;
+        return data;
+      });
+  }
+}
+```
+
+_In this example, we’re using memoization to optimize a function that makes requests to an API. The getDataFromAPI() function first checks if the result for the given endpoint is already cached. If it is, it immediately returns a resolved Promise with the cached data. If it's not, it makes a request to the API using the fetch() method and stores the result in the cache for future use._
+
+# Caching vs Memoization: The Battle for the Cache-ius Throne!
+
+Memoization and caching — two concepts that can be as confusing as trying to order a cup of coffee at a cafe in a foreign country. Memoization is like a bartender who remembers your favorite drink order and has it ready for you before you even ask, while caching is like a secret storage room where you keep all your precious data safe and accessible. So, put on your programming hats and let’s explore these two mystical… I mean, technical techniques together.
+
+1. **Purpose**: Memoization caches the results of a specific function to optimize its performance, while caching stores frequently used data throughout an application.
+2. **Implementation**: Memoization can be implemented with a simple function wrapper, while caching may require complex data structures and algorithms.
+3. **Time-to-live**: Memoized results are typically stored in memory for the duration of a single function call, while cached data can be stored for longer periods of time and may need to be periodically refreshed or invalidated.
+4. **Scope**: Memoization is typically used within a single function or module, while caching can be used across multiple functions or modules.
+5. **Cache Invalidation**: Memoization does not offer automatic cache invalidation, while caching can be invalidated manually or automatically based on defined criteria.
+6. **Automatic Caching**: Memoization requires explicit caching, while caching can be automatic and performed by the language or framework being used.
+
+Understanding the distinction between memoization and caching is essential for any developer looking to improve the speed of their code. You may dramatically enhance the speed and efficiency of your applications by selecting the proper strategy for the right scenario.
+
+Here’s a joke for you!!Why did the memoized function break up with the caching algorithm?Because it realized that it was just using it for its cache!😂😂
+
+# Best Practices for Using Memoization in JavaScript
+
+In previous section, we understood what memoization is and how is memoization used by us in real world application. In this section, we’ll go over some best practices for using memoization effectively in your code. Some of them are:
+
+- Memoize only pure functions that always return the same output given the same input
+- Test the performance of your memoized functions against the original version to ensure that the optimization is worth it
+- Be mindful of memory usage and clear the cache object if it becomes too large
+- Avoid memoizing functions with side effects, such as functions that modify external state or perform I/O operations
+- Document your memoized functions and cache object to make it easier for other developers to understand and work with your code
+- Avoid memoizing functions with side effects, such as functions that modify external state or perform I/O operations
+
+# Memoization in ReactJS
+
+Memoization is a powerful technique for improving the performance of JavaScript functions by caching their results. In React, memoization is used in two main ways: through the use of React.memo(now memo), which memoizes the result of a component’s render method, and the useMemo hook, which memoizes the result of a function. By using memoization in React, you can avoid unnecessary re-renders and re-computations, and build faster, more responsive user interfaces.
+
+# Memoization in few other places
+
+Memoization is a technique commonly used in dynamic programming to optimize recursive algorithms that have overlapping subproblems. In dynamic programming, you solve a problem by breaking it down into smaller subproblems, and then solve each subproblem only once and store the solution in a table for future use. This is where memoization comes in handy. By using memoization, you can store the solutions to subproblems that have already been solved and retrieve them when needed, without having to recalculate them every time.
+
+Memoization is commonly used in functional programming languages like Haskell, where it is a built-in feature. In functional programming, functions are pure and don’t have side effects, which makes them ideal for memoization.
+
+# Conclusion
+
+In this blog, we’ve explored the basics of memoization in JavaScript, and looked at how it can be implemented using simple examples. We’ve also discussed best practices for using memoization in your code, and highlighted some of the common pitfalls to avoid. Overall, memoization is a powerful technique that can help you build faster and more efficient applications, but it’s important to use it correctly and with care. By following the best practices outlined in this blog, you can take advantage of memoization to optimize your code and improve your application’s performance.
+
+You can learn more about memoization from the below sources:
+
+- [What is Memoization? How and When to Memoize in JavaScript and React](https://www.freecodecamp.org/news/memoization-in-javascript-and-react/) by freecodecamp.org
+
+- [Learn JavaScript by Implementing Memoization](https://betterprogramming.pub/learn-javascript-by-implementing-memoization-394274485547) by Edgar Abgaryan
+
+Any suggestions or corrections are always welcome!!🦚
+
+Thank you!!
