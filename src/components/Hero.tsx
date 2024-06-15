@@ -102,7 +102,7 @@ export default function HeroSection() {
               <HireMeButton />
             </div>
             {/* Image */}
-            <div className="w-full md:w-1/2 p-4 flex items-center justify-center">
+            <div className="w-full md:w-1/2 p-4 flex items-end justify-center md:ml-28">
               <Image
                 alt="Portfolio"
                 className={cn("rounded-lg border-4", {

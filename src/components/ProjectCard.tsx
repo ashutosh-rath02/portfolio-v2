@@ -65,7 +65,7 @@ function Projects() {
       <p className="text-2xl md:text-3xl font-bold text-start mb-2 text-gray-900 dark:text-white">
         Featured Projects💪
       </p>
-      <div className="bg-gradient-to-r from-purple-500 to-indigo-500 h-1 w-16 mb-4"></div>
+      <div className="bg-gradient-to-r from-purple-500 to-indigo-500 h-1 w-16 mb-16"></div>
       <FeaturedProjects />
       <div className="mt-6 flex justify-center">
         <Link
