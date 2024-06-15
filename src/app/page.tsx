@@ -1,3 +1,4 @@
+import ContactButton from "@/components/contact";
 import ExperienceSection from "@/components/Experience";
 import HeroSection from "@/components/Hero";
 import Projects from "@/components/ProjectCard";
@@ -10,6 +11,7 @@ export default function Home() {
       <ExperienceSection />
       <TechStack />
       <Projects />
+      <ContactButton />
     </main>
   );
 }

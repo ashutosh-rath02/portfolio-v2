@@ -47,13 +47,19 @@ const Footer = () => {
         <div className="md:w-1/2 w-full flex flex-col gap-8 items-center md:items-end">
           <div className="mb-4 md:mb-0 items-start md:items-end text-right hidden md:block">
             <Link href={"/"}>
-              <p className="font-semibold cursor-pointer">About</p>
+              <p className="font-semibold cursor-pointer hover:text-white">
+                About
+              </p>
             </Link>
             <Link href={"/projects"}>
-              <p className="font-semibold cursor-pointer">Projects</p>
+              <p className="font-semibold cursor-pointer hover:text-white">
+                Projects
+              </p>
             </Link>
             <Link href={"/blogs"}>
-              <p className="font-semibold cursor-pointer">Blogs</p>
+              <p className="font-semibold cursor-pointer hover:text-white">
+                Blogs
+              </p>
             </Link>
           </div>
           <div className="flex space-x-4 mt-4 md:mt-0">
