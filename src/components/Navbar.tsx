@@ -28,7 +28,7 @@ const Navbar = () => {
           </ul>
         </div>
       </div>
-      <div className="w-1/3" />
+      <div className="w-1/3 " />
     </nav>
   );
 };

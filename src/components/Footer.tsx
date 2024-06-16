@@ -22,9 +22,6 @@ const Footer = () => {
     <footer className="text-[#7E8C9A] mt-12 w-full backdrop-blur-md bg-opacity-30 bg-gray-900 rounded-lg mx-auto px-2 py-2 md:py-4 min-h-52 md:px-8">
       <div className="mx-auto flex flex-col md:flex-row justify-between items-center max-w-5xl px-4">
         <div className="mb-6 md:mb-0 md:w-3/4">
-          <p className="text-2xl mb-4 font-bold ">
-            Let&apos;s connect and grab a coffee ☕
-          </p>
           <p className="font-bold">
             Drop me a line for work inquiries or just say hello
           </p>

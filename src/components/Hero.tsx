@@ -88,7 +88,7 @@ export default function HeroSection() {
               <p className="text-green-500 font-bold">Available for work</p>
             </div>
             {/* Text */}
-            <div className="w-full md:w-1/2 text-center flex flex-col items-start justify-center md:text-left mb-8 md:mb-0">
+            <div className="w-full md:w-1/2 text-left flex flex-col items-start justify-center md mb-8 md:mb-0">
               <h1
                 className={`text-3xl md:text-4xl leading-snug mb-4 ${poppins.className}`}
               >
@@ -105,23 +105,27 @@ export default function HeroSection() {
             <div className="w-full md:w-1/2 p-4 flex items-end justify-center md:ml-28">
               <Image
                 alt="Portfolio"
-                className={cn("rounded-lg border-4", {
-                  "border-purple-300": currentFramework === "next",
-                  "border-sky-300": currentFramework === "typescript",
-                  "border-yellow-300": currentFramework === "chrome",
-                  "border-teal-300": currentFramework === "tailwind",
-                  "border-blue-300": currentFramework === "react",
-                  "border-green-300": currentFramework === "mongodb",
-                  "border-orange-400": currentFramework === "linux",
-                  "border-red-300": currentFramework === "mobile",
-                  "border-neutral-300": currentFramework === "desktop",
-                  "border-green-900": currentFramework === "node",
-                  "border-lime-300": currentFramework === "supabase",
-                  "border-blue-900": currentFramework === "docker",
-                })}
-                src="https://res.cloudinary.com/dhnkuonev/image/upload/v1717426428/portfolio/unnamed_bppmz7.png"
-                width="350"
-                height="350"
+                className={cn(
+                  "rounded-lg border-4",
+                  "w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl",
+                  {
+                    "border-purple-300": currentFramework === "next",
+                    "border-sky-300": currentFramework === "typescript",
+                    "border-yellow-300": currentFramework === "chrome",
+                    "border-teal-300": currentFramework === "tailwind",
+                    "border-blue-300": currentFramework === "react",
+                    "border-green-300": currentFramework === "mongodb",
+                    "border-orange-400": currentFramework === "linux",
+                    "border-red-300": currentFramework === "mobile",
+                    "border-neutral-300": currentFramework === "desktop",
+                    "border-green-900": currentFramework === "node",
+                    "border-lime-300": currentFramework === "supabase",
+                    "border-blue-900": currentFramework === "docker",
+                  }
+                )}
+                src="https://res.cloudinary.com/dhnkuonev/image/upload/v1718546215/portfolio/unnamed_wxefuz.jpg"
+                width={350}
+                height={350}
               />
             </div>
           </div>

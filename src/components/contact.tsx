@@ -20,7 +20,7 @@ export default function ContactButton() {
         Let&apos;s Connect Over Coffee☕
       </span>
       <div className="bg-gradient-to-r from-purple-500 to-indigo-500 h-1 w-16 mb-4"></div>
-      <p className="mb-4 text-start flex w-1/3 items-center">
+      <p className="mb-4 text-start flex w-full md:w-1/3 items-center">
         Schedule a time that works for you and let&apos;s discuss opportunities,
         ideas, and more.
       </p>
