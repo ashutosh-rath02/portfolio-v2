@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: "/private/",
     },
-    sitemap: "https://ashutoshrath.me/sitemap.xml",
+    sitemap: "https://www.ashutoshrath.me/sitemap.xml",
   };
 }

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   keywords:
     "Portfolio, Ashutosh Rath, Web Developer, Software Engineer, Full Stack Developer, React Developer, Next.js Developer, Tailwind CSS Developer, JavaScript Developer, TypeScript Developer, Node.js Developer, MongoDB Developer, Express Developer, React Developer, Redux Developer,Go Developer, GoLang developer, Devops, devops engineer, backend developer, Web Developer in India, Web Developer in Odisha, Web Developer in Bhubaneswar, Web Developer in Rourkela, Web Developer in Bangalore, Web Developer in Bengaluru, Web Developer in Karnataka, Web Developer in India, Web Developer in Asia, Web Developer in World, Web Developer in USA, Web Developer in Canada, Web Developer in Australia, Web Developer in UK, Web Developer in Europe, Web Developer in Africa, Web Developer in South America, Web Developer in North America, Web Developer in Antarctica, Web Developer in Mars, Web Developer in Jupiter, Web Developer in Saturn, Web Developer in Pluto, Web Developer in Neptune, Web Developer in Uranus, Web Developer in Venus, Web Developer in Mercury, Web Developer in Sun, Web Developer in Moon, Web Developer in Earth, Web Developer in Milky Way, Web Developer in Universe, Web Developer in Multiverse, Web Developer in Metaverse, Web Developer in Hyperspace, Web Developer in Hypertime. Freelancer, Internship, Hiring",
   openGraph: {
-    url: "https://ashutoshrath.me",
+    url: "https://www.ashutoshrath.me",
     type: "website",
     locale: "en_US",
     siteName: "Ashutosh | Portfolio",
@@ -42,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta property="og:url" content="https://ashutoshrath.me" />
+        <meta property="og:url" content="https://www.ashutoshrath.me" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Ashutosh | Portfolio" />
         <meta
@@ -56,7 +56,7 @@ export default function RootLayout({
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta property="twitter:domain" content="ashutoshrath.me" />
-        <meta property="twitter:url" content="https://ashutoshrath.me" />
+        <meta property="twitter:url" content="https://www.ashutoshrath.me" />
         <meta name="twitter:title" content="Ashutosh's Portfolio" />
         <meta
           name="twitter:description"
