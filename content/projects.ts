@@ -77,4 +77,22 @@ export const projectsData = [
     github: "https://github.com/ashutosh-rath02/feedback",
     tech: ["NextJS", "Upstash", "Redis", "TailwindCSS"],
   },
+  {
+    title: "Pterabyte",
+    description:
+      "Got bored of storing links here and there? Here's pterabyte, a chrome extension to store all of your important links at one place.",
+    img: "https://res.cloudinary.com/dhnkuonev/image/upload/v1721828584/portfolio/Screenshot_2024-07-04_201229_ctx4dh.png",
+    url: "https://github.com/ashutosh-rath02/pterabyte",
+    github: "https://github.com/ashutosh-rath02/pterabyte",
+    tech: ["Javascript"],
+  },
+  {
+    title: "Screenflick",
+    description:
+      "Screenflick is a web application that generates iconic movie quotes from films around the world. Using advanced AI technology, it provides users with memorable dialogues from their favorite movies, complete with character names and English translations when necessary.",
+    img: "https://res.cloudinary.com/dhnkuonev/image/upload/v1721569736/portfolio/Screenshot_2024-07-21_191721_vfvcrk.png",
+    url: "https://screenflick.ashutoshrath.me/",
+    github: "https://github.com/ashutosh-rath02/dialogue-ai",
+    tech: ["NextJS", "React", "TailwindCSS", "Gemini Pro", "AI"],
+  },
 ];
