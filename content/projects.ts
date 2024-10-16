@@ -95,4 +95,13 @@ export const projectsData = [
     github: "https://github.com/ashutosh-rath02/dialogue-ai",
     tech: ["NextJS", "React", "TailwindCSS", "Gemini Pro", "AI"],
   },
+   {
+    title: "Cosmic Type  ",
+    description:
+      "Cosmic Type is an exhilarating typing game that challenges players to defend Earth from alien invaders using their keyboard skills. As extraterrestrial threats approach, players must type words accurately and quickly to obliterate the alien ships before they reach our planet.",
+    img: "https://res.cloudinary.com/dhnkuonev/image/upload/v1729072656/Screenshot_2024-10-16_152643_pocxrp.png",
+    url: "https://cosmictype.ashutoshrath.me/",
+    github: "https://github.com/ashutosh-rath02/space-type",
+    tech: ["HTML", "CSS", "JS", "Game"],
+  },
 ];
