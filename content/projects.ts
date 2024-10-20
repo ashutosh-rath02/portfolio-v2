@@ -104,4 +104,13 @@ export const projectsData = [
     github: "https://github.com/ashutosh-rath02/space-type",
     tech: ["HTML", "CSS", "JS", "Game"],
   },
+    {
+    title: "Poke-tek",
+    description:
+      "Pokémon Fusion Laboratory is an interactive web application that allows users to explore the world of Pokémon, create unique fusions, and predict battle outcomes. Built with React and powered by the PokéAPI, this project offers a fun and engaging way to combine different Pokémon and discover new possibilities.",
+    img: "https://res.cloudinary.com/dhnkuonev/image/upload/v1729451009/Screenshot_2024-10-21_002929_bzc0kb.png",
+    url: "https://poke-tek.vercel.app/",
+    github: "https://github.com/ashutosh-rath02/poke-tek",
+    tech: ["React", "TailwindCSS", "API"],
+  },
 ];
