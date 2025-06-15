@@ -95,4 +95,22 @@ export const projectsData = [
     github: "https://github.com/ashutosh-rath02/dialogue-ai",
     tech: ["NextJS", "React", "TailwindCSS", "Gemini Pro", "AI"],
   },
+   {
+    title: "Cosmic Type  ",
+    description:
+      "Cosmic Type is an exhilarating typing game that challenges players to defend Earth from alien invaders using their keyboard skills. As extraterrestrial threats approach, players must type words accurately and quickly to obliterate the alien ships before they reach our planet.",
+    img: "https://res.cloudinary.com/dhnkuonev/image/upload/v1729072656/Screenshot_2024-10-16_152643_pocxrp.png",
+    url: "https://cosmictype.ashutoshrath.me/",
+    github: "https://github.com/ashutosh-rath02/space-type",
+    tech: ["HTML", "CSS", "JS", "Game"],
+  },
+    {
+    title: "Poke-tek",
+    description:
+      "Pokémon Fusion Laboratory is an interactive web application that allows users to explore the world of Pokémon, create unique fusions, and predict battle outcomes. Built with React and powered by the PokéAPI, this project offers a fun and engaging way to combine different Pokémon and discover new possibilities.",
+    img: "https://res.cloudinary.com/dhnkuonev/image/upload/v1729451009/Screenshot_2024-10-21_002929_bzc0kb.png",
+    url: "https://poke-tek.vercel.app/",
+    github: "https://github.com/ashutosh-rath02/poke-tek",
+    tech: ["React", "TailwindCSS", "API"],
+  },
 ];
