@@ -16,7 +16,7 @@ const Navbar = () => {
               </Link>
             </li>
             <li>
-              <Link href="/blog">
+              <Link href="https://blogs.ashutoshrath.me/">
                 <p className="hover:text-gray-400">Blogs</p>
               </Link>
             </li>

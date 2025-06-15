@@ -75,9 +75,22 @@ const ExperienceSection = () => {
 
 const experiences = [
   {
+    role: "Software Engineer",
+    company: "TheAware.AI",
+    period: "Jan 2024 - Present · 5 mos",
+    location: "Durgapur, West Bengal, India",
+    descriptionPoints: [
+      "Developing AI-driven applications and products.",
+      "Building cross-platform mobile applications using Flutter.",
+      "Creating robust backends with Python for seamless application performance.",
+      "Designing and implementing web applications using Next.js and Tailwind CSS.",
+    ],
+    skills: ["Flutter", "Python", "Next.js", "Tailwind CSS", "AI Applications"],
+  },
+  {
     role: "Full Stack Developer",
     company: "Anatech Global Consultancy",
-    period: "May 17, 2024 - Present",
+    period: "May 17, 2024 - July 31, 2024 · 3 mos",
     location: "Remote",
     descriptionPoints: [
       "Leading various projects, leveraging full-stack development skills.",
