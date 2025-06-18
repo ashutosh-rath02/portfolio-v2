@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import SectionWrapper from "@/components/SectionWrapper";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import UTMTracker from "@/components/UTMTracker";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -73,6 +74,7 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
+        <UTMTracker />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
