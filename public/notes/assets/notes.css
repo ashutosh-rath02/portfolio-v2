@@ -282,3 +282,13 @@ a.bk:hover,a.bk:focus-visible{border-color:var(--acc)}
 .bk-foot{display:flex;justify-content:space-between;font:400 12px var(--fm);color:var(--ink2)}
 .bk-go{color:var(--acc-ink)}
 .bk-next{border-style:dashed;background:transparent}
+
+/* compact shelf cards */
+.books{grid-template-columns:repeat(auto-fill,minmax(210px,230px));gap:14px;margin-top:32px}
+.bk{padding:14px 16px 12px;gap:6px}
+.bk h2{font-size:24px;line-height:1.1}
+.bk p{font-size:13.5px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bk-meta{font-size:10.5px}
+.bk-foot{font-size:11px}
+.bk-next p{-webkit-line-clamp:2}
+@media (max-width:520px){.books{grid-template-columns:1fr 1fr}.bk h2{font-size:21px}.bk-go{display:none}}
