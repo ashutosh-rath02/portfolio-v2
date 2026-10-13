@@ -12,6 +12,19 @@ export default {
     formats: ["image/avif", "image/webp"],
     dangerouslyAllowSVG: true,
   },
+  // Reading notes are static pages in public/notes. These rewrites give them
+  // clean URLs (/notes, /notes/<book>, /notes/<book>/ch1). Real files such as
+  // /notes/assets/notes.css are matched first, so assets are unaffected.
+  async rewrites() {
+    return [
+      { source: "/notes", destination: "/notes/index.html" },
+      { source: "/notes/:book", destination: "/notes/:book/index.html" },
+      {
+        source: "/notes/:book/:chapter",
+        destination: "/notes/:book/:chapter/index.html",
+      },
+    ];
+  },
 };
 
 class VeliteWebpackPlugin {

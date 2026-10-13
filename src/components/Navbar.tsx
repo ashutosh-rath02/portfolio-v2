@@ -25,6 +25,12 @@ const Navbar = () => {
                 <p className="hover:text-gray-400">Projects</p>
               </Link>
             </li>
+            <li>
+              {/* Static pages served from public/notes, so use a plain anchor */}
+              <a href="/notes">
+                <p className="hover:text-gray-400">Notes</p>
+              </a>
+            </li>
           </ul>
         </div>
       </div>

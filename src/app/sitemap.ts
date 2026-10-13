@@ -19,6 +19,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
     },
     {
+      url: "https://www.ashutoshrath.me/notes",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+    },
+    {
+      url: "https://www.ashutoshrath.me/notes/inference-engineering",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+    },
+    {
+      url: "https://www.ashutoshrath.me/notes/inference-engineering/ch1",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+    },
+    {
       url: `${process.env.NEXT_PUBLIC_BASE_URL}/blog/memoizatoion`,
       lastModified: new Date(),
       changeFrequency: "monthly",

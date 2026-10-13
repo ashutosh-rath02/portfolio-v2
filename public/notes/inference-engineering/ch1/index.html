@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Prerequisites | Inference Engineering notes</title>
+<meta name="description" content="Animated visual notes for chapter 1 of Inference Engineering by Philip Kiely: interactive figures, flowcharts, a mind map and recall cards.">
+<meta property="og:title" content="Prerequisites | Inference Engineering notes">
+<meta property="og:description" content="Animated visual notes for chapter 1 of Inference Engineering by Philip Kiely.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.ashutoshrath.me/notes/inference-engineering/ch1">
+<link rel="canonical" href="https://www.ashutoshrath.me/notes/inference-engineering/ch1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/notes/assets/notes.css">
+<script>try{var t=localStorage.getItem('notes-theme');if(t!=='light'&&t!=='dark'){t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark')t=''}if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-page="chapter" data-book="inference-engineering" data-chapter="1">
+<header id="notes-top"></header>
+<div class="shell">
+<aside class="rail" id="notes-rail" aria-label="Contents"></aside>
+<main>
+
+<!-- OVERVIEW -->
+<section class="sec" id="overview" data-nav="Overview" data-chip="Overview" style="padding-top:56px">
+  <p class="eyebrow">Chapter 1 · Philip Kiely, Inference Engineering</p>
+  <h1 class="display">Prerequisites</h1>
+  <p class="lede">Before you make anything fast, decide what fast means for your product. Optimizing is a series of trade-offs among latency, throughput and quality, so the first job is knowing which side of each trade your product sits on.</p>
+  <p>The chapter opens with an athlete analogy. A professional football player is not as big as a sumo wrestler, as fast as an Olympic sprinter, or as strong as a champion powerlifter. The body is tuned for one position over a full season. An inference system should be tuned the same way, for your model, your product and your traffic. The more constraints you can introduce, the better the outcome you can reach.</p>
+
+  <div class="fig" id="f-tri">
+    <p class="fig-cap">Fig. A · The balance you choose · illustrative · drag or tap inside the triangle</p>
+    <div class="scroll">
+    <svg id="tri" class="fit" viewBox="30 0 660 420" role="img" aria-label="A triangle with latency at the top, throughput at bottom left and quality at bottom right. A movable point shows how much weight you give each goal." style="cursor:crosshair;touch-action:pan-y">
+      <g id="tri-grid"></g>
+      <path class="ln" d="M360 80 L600 350 L120 350 Z"/>
+      <g id="tri-pulls"></g>
+      <g id="tri-dot" style="transform:translate(384px,188px)"><circle r="12" fill="var(--panel)" stroke="var(--acc)" stroke-width="1.4"/><circle r="4" fill="var(--acc)"/></g>
+      <text class="t" x="360" y="36" text-anchor="middle">LATENCY</text>
+      <text class="tm" x="360" y="55" text-anchor="middle">speed for each user</text>
+      <text class="t" x="120" y="380" text-anchor="middle">THROUGHPUT</text>
+      <text class="tm" x="120" y="399" text-anchor="middle">total work per GPU</text>
+      <text class="t" x="600" y="380" text-anchor="middle">QUALITY</text>
+      <text class="tm" x="600" y="399" text-anchor="middle">how good each answer is</text>
+    </svg>
+    </div>
+    <div class="bars" id="tri-bars">
+      <div class="bar"><span>Latency</span><span class="bar-t"><i class="bar-fill" style="width:60%"></i></span><span class="bar-val">60%</span></div>
+      <div class="bar"><span>Throughput</span><span class="bar-t"><i class="bar-fill" style="width:15%"></i></span><span class="bar-val">15%</span></div>
+      <div class="bar"><span>Quality</span><span class="bar-t"><i class="bar-fill" style="width:25%"></i></span><span class="bar-val">25%</span></div>
+    </div>
+    <div class="row" id="tri-presets" role="group" aria-label="Example workloads" style="margin-top:14px">
+      <button class="btn" type="button" data-w=".6,.15,.25" aria-pressed="true">Live chat</button>
+      <button class="btn" type="button" data-w=".1,.7,.2" aria-pressed="false">Batch transcription</button>
+      <button class="btn" type="button" data-w=".15,.15,.7" aria-pressed="false">High-stakes summaries</button>
+    </div>
+  </div>
+
+  <ol class="summary" aria-label="The chapter in four parts">
+    <li><a href="#s11">1.1</a><span>Decide between shared and dedicated inference, and move only when scale, specialization or orchestration demands it.</span></li>
+    <li><a href="#s12">1.2</a><span>Let your app decide the targets: online or offline, consumer or business, and which compliance rules apply.</span></li>
+    <li><a href="#s13">1.3</a><span>Choose the smallest model that passes your own evals, then consider fine-tuning or distillation.</span></li>
+    <li><a href="#s14">1.4</a><span>Measure with TTFT, TPS and percentiles, and separate inference time from end-to-end time.</span></li>
+  </ol>
+</section>
+
+<!-- INPUTS -->
+<section class="sec" id="inputs" data-nav="Five inputs" data-chip="Inputs">
+  <p class="kick">Before 1.1</p>
+  <h2 class="sec-h">Know your five inputs</h2>
+  <p>Optimization means picking the best option from a range of options, and you cannot pick until you know what best means. The chapter gives five things to know about your product. Select a node to read the question behind it.</p>
+
+  <div class="fig" id="f-five">
+    <p class="fig-cap">Fig. B · What to know before optimizing · select a node</p>
+    <div class="scroll" id="five-scroll"><svg id="five" viewBox="0 0 720 420" role="group" aria-label="Five questions to answer about your product"></svg></div>
+    <div class="five-list" id="five-list" role="group" aria-label="Five questions to answer about your product"></div>
+    <div class="read" id="five-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <p>Early in a product's life these answers are often unclear. In that phase it is usually better to use off-the-shelf APIs than to invest in dedicated inference. As the product scales, the requirements firm up and inference engineering becomes worth the effort.</p>
+</section>
+
+<!-- 1.1 -->
+<section class="sec" id="s11" data-nav="1.1 Scale and specialization" data-chip="1.1">
+  <p class="kick">1.1</p>
+  <h2 class="sec-h">Scale and specialization</h2>
+  <p>There are two ways to add a model to a product. With <strong>shared inference</strong> you send traffic to a public API endpoint and pay per million tokens or a similar consumption metric. With a <strong>dedicated deployment</strong> you rent GPUs, or buy them, run a service just for your application, and pay for GPU time.</p>
+  <p>This is not the same as closed versus open models. Plenty of shared endpoints serve open models, and many labs sell dedicated setups for their closed models. The link is that open weights unlock unrestricted dedicated inference.</p>
+
+  <div class="twocol">
+    <div class="card"><h4>Shared inference: pros</h4><ul><li>No overhead, you pay only for consumption</li><li>No cold starts, the model is always available</li><li>Little engineering work, you need an API key</li></ul></div>
+    <div class="card"><h4 class="w">Shared inference: cons</h4><ul><li>Cost grows linearly with usage</li><li>The provider's uptime caps yours, and neighbors are noisy</li><li>No control over latency, model quality or rate limits</li></ul></div>
+  </div>
+
+  <div class="fig" id="f-cost">
+    <p class="fig-cap">Fig. C · Where dedicated starts to win · illustrative shape, not real prices</p>
+    <div class="scroll">
+    <svg id="cost" viewBox="0 0 720 350" role="img" aria-label="Chart of cost against monthly volume. Shared inference cost rises in a straight line. Dedicated cost is a flat line. They cross at a break-even volume.">
+      <path class="ln" d="M70 40 V300 H690"/>
+      <path class="ln draw" pathLength="1" style="stroke:var(--acc)" d="M70 300 L680 60"/>
+      <path class="ln draw w" pathLength="1" style="--s:6%" d="M70 190 H680"/>
+      <circle cx="349.6" cy="190" r="5" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.4"/>
+      <text class="tm" x="349.6" y="214" text-anchor="middle">break-even</text>
+      <text class="t ta" x="676" y="40" text-anchor="end">SHARED: PAY PER TOKEN</text>
+      <text class="t tw" x="676" y="178" text-anchor="end">DEDICATED: PAY PER GPU HOUR</text>
+      <text class="tm" x="70" y="326">low volume</text>
+      <text class="tm" x="690" y="326" text-anchor="end">monthly volume, higher</text>
+      <text class="tm" x="78" y="34">monthly cost</text>
+      <line id="cost-line" x1="200" y1="40" x2="200" y2="300" class="ln dash" style="stroke:var(--ink2);stroke-width:1"/>
+      <circle id="cost-d1" cx="200" cy="200" r="5" fill="var(--acc)"/>
+      <circle id="cost-d2" cx="200" cy="190" r="5" fill="var(--warn)"/>
+    </svg>
+    </div>
+    <div class="ctl"><div><label for="cost-v">Monthly volume <output id="cost-o">30%</output></label><input id="cost-v" type="range" min="2" max="100" value="30"></div></div>
+    <div class="read" id="cost-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+
+  <p>Most AI products start on pay-per-token APIs because the trade-offs make sense while you look for product-market fit. Over time, moving to dedicated deployments becomes essential for three reasons.</p>
+  <div class="cards">
+    <div class="card lift"><h4>Scale</h4><p>Traffic is high enough that paying per GPU is cheaper than paying per million tokens.</p></div>
+    <div class="card lift"><h4>Specialization</h4><p>You run a custom or fine-tuned model, or you have specific latency or uptime requirements.</p></div>
+    <div class="card lift"><h4>Orchestration</h4><p>Your product chains several models and steps, and you need less network latency and less deployment complexity.</p></div>
+  </div>
+  <p>The switch makes you responsible for your own inference engineering. That buys flexibility and control, and it also widens your engineering surface and raises the floor of your monthly spend. Switch only when there is a clear and immediate business need.</p>
+</section>
+
+<!-- 1.2 -->
+<section class="sec" id="s12" data-nav="1.2 About your app" data-chip="1.2">
+  <p class="kick">1.2</p>
+  <h2 class="sec-h">About your app</h2>
+  <p>Every inference decision you make is downstream of your use case. A basketball coach and a gymnastics coach recruiting at the same school want different students, because the sport decides what to look for. How your inference system will be used decides how you build it.</p>
+  <p>Two kinds of builders have to work at the highest level of generality. <strong>Foundation model labs</strong> sell consumption through a public API and must support many usage patterns. <strong>Inference platforms</strong>, internal or commercial, must support any model and any use case. Most AI-native applications are vertical apps such as code editors or customer service agents, and for those the advice reverses: add as many constraints as you can.</p>
+
+  <div class="fig" id="f-fun">
+    <p class="fig-cap">Fig. D · Generality narrows as constraints are added · synthesis</p>
+    <div class="scroll">
+    <svg id="fun" viewBox="0 0 720 300" role="img" aria-label="A funnel with three bands: inference platform, foundation model lab, vertical AI-native app. The funnel narrows as constraints are added.">
+      <path class="ln draw" pathLength="1" d="M40 40 H680 L470 260 H250 Z"/>
+      <path class="ln soft draw" pathLength="1" style="--s:6%" d="M107 110 H613"/>
+      <path class="ln soft draw" pathLength="1" style="--s:12%" d="M178 185 H542"/>
+      <g class="lift"><text class="tb" x="360" y="72" text-anchor="middle">Inference platform</text><text class="ts" x="360" y="92" text-anchor="middle">any model, any use case</text></g>
+      <g class="lift"><text class="tb" x="360" y="141" text-anchor="middle">Foundation model lab</text><text class="ts" x="360" y="161" text-anchor="middle">many usage patterns, one public API</text></g>
+      <g class="lift"><text class="tb ta" x="360" y="213" text-anchor="middle">Vertical AI-native app</text><text class="ts" x="360" y="233" text-anchor="middle">add every constraint you can</text></g>
+    </svg>
+    </div>
+  </div>
+
+  <h3 class="sub-h"><span class="kick">1.2.1</span>AI-native applications</h3>
+  <p>Generative models have opened new categories of products, and each category leans on different models and modalities. The chapter offers a small sample to show how wide the range of considerations is.</p>
+  <div class="cards">
+    <div class="card lift"><h4>Agents</h4><p>One user action triggers many inference calls.</p><span class="ex">e.g. a prospecting agent for sales teams</span></div>
+    <div class="card lift"><h4>Chat</h4><p>Time to first token decides whether chat feels fast.</p><span class="ex">e.g. customer support chat with RAG</span></div>
+    <div class="card lift"><h4>Voice</h4><p>End-to-end latency decides whether conversation feels natural.</p><span class="ex">e.g. real-time translation between languages</span></div>
+    <div class="card lift"><h4>Media</h4><p>Balance output quality against speed.</p><span class="ex">e.g. virtual try-on for clothes and jewelry</span></div>
+    <div class="card lift"><h4>Search</h4><p>Offline corpus filling and online user requests have different needs.</p><span class="ex">e.g. legal document discovery</span></div>
+    <div class="card lift"><h4>RecSys</h4><p>Consistent latency at high request volume.</p><span class="ex">e.g. e-commerce product recommendations</span></div>
+    <div class="card lift"><h4>Completion</h4><p>A full completion chunk must arrive at the user's typing speed.</p><span class="ex">e.g. tab completion in an IDE</span></div>
+    <div class="card lift"><h4>Moderation</h4><p>High throughput keeps safety checks cost-effective.</p><span class="ex">e.g. scanning user-generated content</span></div>
+  </div>
+
+  <h3 class="sub-h"><span class="kick">1.2.2</span>Online versus offline</h3>
+  <p>One of the main trade-offs in inference engineering is latency against throughput. Lower latency makes the application faster. Higher throughput makes it cheaper at scale, because fewer GPUs serve the same number of users. Code completion, chat and voice agents are online workloads with an impatient person waiting, so they optimize for latency.</p>
+  <p>Offline batch jobs run on high-throughput deployments. Each request would feel too slow to a person, but the system finishes far more requests per hour in parallel. Examples are transcribing a back catalog of audio, embedding or analyzing documents on a schedule, and preparing large corpora for model training.</p>
+
+  <div class="fig" id="f-oo">
+    <p class="fig-cap">Fig. E · One GPU, two goals · illustrative numbers</p>
+    <div class="row" id="oo-modes" role="group" aria-label="Workload type" style="margin-bottom:12px">
+      <button class="btn" type="button" data-m="online" aria-pressed="true">Online</button>
+      <button class="btn" type="button" data-m="offline" aria-pressed="false">Offline batch</button>
+    </div>
+    <div class="scroll">
+    <svg id="oo" viewBox="0 0 720 250" role="img" aria-label="Requests moving through a GPU. Online mode shows few fast requests. Offline mode shows many slower requests in parallel.">
+      <rect x="230" y="20" width="260" height="210" class="ln"/>
+      <text class="t" x="240" y="14">GPU</text>
+      <g id="lanes"></g>
+      <path class="ln" d="M40 125 H220" marker-end="url(#ah)"/>
+      <path class="ln" d="M500 125 H680" marker-end="url(#ah)"/>
+      <text class="tm" x="40" y="112">requests in</text>
+      <text class="tm" x="680" y="112" text-anchor="end">responses out</text>
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+    </svg>
+    </div>
+    <div class="bars">
+      <div class="bar sm"><span>Latency per request</span><span class="bar-t"><i class="bar-fill w" id="oo-lat" style="width:20%"></i></span><span class="bar-val" id="oo-lat-v">1.0 s</span></div>
+      <div class="bar sm"><span>Requests per second</span><span class="bar-t"><i class="bar-fill" id="oo-thr" style="width:42%"></i></span><span class="bar-val" id="oo-thr-v">2.0</span></div>
+    </div>
+    <div class="read" id="oo-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <p>A single model can serve both. Whisper, a speech-to-text model, can power a real-time dictation app and a batch transcription job. With enough volume on both, it is more cost effective to run two deployments of the same model, one tuned for latency and one tuned for throughput.</p>
+
+  <h3 class="sub-h"><span class="kick">1.2.3</span>Consumer versus B2B</h3>
+  <p>Consumer apps are more cost-sensitive and less predictable, and a launch or a marketing campaign can spike usage overnight. Business products tend to have better margins and steadier usage, but they sit in a revenue path and are held to a higher standard of reliability.</p>
+  <div class="twocol">
+    <div class="card lift"><h4>Consumer</h4><p><strong>Prioritize:</strong> marginal cost and flexibility for spikes.</p><p style="margin-top:8px"><strong>Keep decent:</strong> latency and availability.</p></div>
+    <div class="card lift"><h4>Business to business</h4><p><strong>Prioritize:</strong> latency and uptime.</p><p style="margin-top:8px"><strong>Secondary:</strong> cost and scale.</p></div>
+  </div>
+  <p>In both cases compliance can limit your infrastructure options, especially in regulated industries. Work closely with security and legal experts to make sure what you operate is compliant.</p>
+  <div class="cards">
+    <div class="card lift"><h4>Data sovereignty</h4><p>Are your GPUs in a region where you are allowed to send user data?</p></div>
+    <div class="card lift"><h4>User privacy</h4><p>Are model inputs and outputs kept private and secure?</p></div>
+    <div class="card lift"><h4>Regulatory compliance</h4><p>Are you and your providers compliant with all relevant regulations?</p></div>
+  </div>
+</section>
+
+<!-- 1.3 -->
+<section class="sec" id="s13" data-nav="1.3 Model selection" data-chip="1.3">
+  <p class="kick">1.3</p>
+  <h2 class="sec-h">Model selection</h2>
+  <p>All else being equal, including hardware, runtime, optimizations and architecture, a smaller model with fewer parameters is faster and cheaper than a larger one. So the most important performance decision is which model you work with, not which runtime or speculation algorithm you pick.</p>
+  <p>Your choice also limits which optimizations are available, because inference engines differ in how well they support each architecture. Stick with popular architectures to get robust support across the tooling landscape.</p>
+
+  <div class="fig" id="f-path">
+    <p class="fig-cap">Fig. F · Which advice applies when · synthesis of 1.3</p>
+    <div class="row" id="path-modes" role="group" aria-label="Stage" style="margin-bottom:12px">
+      <button class="btn" type="button" data-s="both" aria-pressed="true">Both paths</button>
+      <button class="btn" type="button" data-s="early" aria-pressed="false">Early stage</button>
+      <button class="btn" type="button" data-s="scale" aria-pressed="false">Scaling</button>
+    </div>
+    <div class="scroll">
+    <svg id="path" viewBox="0 0 720 396" role="img" aria-label="Flowchart. Before product-market fit, use prebuilt pay-per-token APIs. When scaling, write evals, find or make the smallest model that passes, and prefer popular architectures.">
+      <defs><marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+      <g class="node"><rect x="230" y="16" width="260" height="54" rx="2"/><text class="tb" x="360" y="48" text-anchor="middle">Do you have product-market fit?</text></g>
+      <g class="p-early">
+        <path class="ln" d="M300 70 V100 H170 V128" marker-end="url(#ah2)"/>
+        <text class="tm" x="235" y="92" text-anchor="middle">early stage</text>
+        <g class="node"><rect x="40" y="130" width="260" height="56" rx="2"/><text class="tb" x="170" y="154" text-anchor="middle">Use a prebuilt pay-per-token API</text><text class="ts" x="170" y="173" text-anchor="middle">frontier models, open or closed</text></g>
+        <path class="ln" d="M170 186 V224" marker-end="url(#ah2)"/>
+        <g class="node warn"><rect x="40" y="226" width="260" height="56" rx="2"/><text class="tb" x="170" y="250" text-anchor="middle">Skip your own inference for now</text><text class="ts" x="170" y="269" text-anchor="middle">not worth the time or money yet</text></g>
+      </g>
+      <g class="p-scale">
+        <path class="ln" d="M420 70 V100 H550 V128" marker-end="url(#ah2)"/>
+        <text class="tm" x="485" y="92" text-anchor="middle">scaling</text>
+        <g class="node acc"><rect x="420" y="130" width="260" height="56" rx="2"/><text class="tb" x="550" y="154" text-anchor="middle">Write evals for your product</text><text class="ts" x="550" y="173" text-anchor="middle">they set the bar and the baseline</text></g>
+        <path class="ln" d="M550 186 V224" marker-end="url(#ah2)"/>
+        <g class="node acc"><rect x="420" y="226" width="260" height="56" rx="2"/><text class="tb" x="550" y="250" text-anchor="middle">Find or make the smallest model</text><text class="ts" x="550" y="269" text-anchor="middle">that still passes the evals</text></g>
+        <path class="ln" d="M550 282 V320" marker-end="url(#ah2)"/>
+        <g class="node acc"><rect x="420" y="322" width="260" height="56" rx="2"/><text class="tb" x="550" y="346" text-anchor="middle">Stick to popular architectures</text><text class="ts" x="550" y="365" text-anchor="middle">more robust tooling support</text></g>
+      </g>
+    </svg>
+    </div>
+  </div>
+  <p>Before product-market fit, it is not worth spending time or money on your own inference. When it is time to scale, the advice flips. Find or create the smallest, easiest-to-run model that is smart enough for the task. Sometimes that is still a trillion-parameter frontier model, but it is always worth checking whether a smaller, cheaper, faster one can do the job.</p>
+
+  <h3 class="sub-h"><span class="kick">1.3.1</span>Model evaluation</h3>
+  <p>Evals are the practice of systematically measuring model intelligence, and they are a prerequisite for inference engineering. They help in two ways. They make you <strong>spend time wisely</strong>, because you confirm a model is useful before investing in making it fast. They also <strong>establish a baseline</strong>, because some optimizations reduce quality and you need something to compare against.</p>
+
+  <div class="fig" id="f-eval">
+    <p class="fig-cap">Fig. G · Evals gate every optimization · synthesis of 1.3.1</p>
+    <div class="scroll">
+    <svg id="eval" viewBox="0 0 720 210" role="img" aria-label="Loop. Set a baseline, try an optimization, re-run the evals. If quality held, keep the faster model. If it dropped, go back and try another technique.">
+      <g class="node"><rect x="20" y="50" width="140" height="56" rx="2"/><text class="tb" x="90" y="73" text-anchor="middle">Set a baseline</text><text class="ts" x="90" y="92" text-anchor="middle">score the model first</text></g>
+      <g class="node"><rect x="200" y="50" width="140" height="56" rx="2"/><text class="tb" x="270" y="73" text-anchor="middle">Try a speedup</text><text class="ts" x="270" y="92" text-anchor="middle">may cost quality</text></g>
+      <g class="node"><rect x="380" y="50" width="140" height="56" rx="2"/><text class="tb" x="450" y="73" text-anchor="middle">Re-run the evals</text><text class="ts" x="450" y="92" text-anchor="middle">compare to baseline</text></g>
+      <g class="node acc"><rect x="560" y="50" width="140" height="56" rx="2"/><text class="tb" x="630" y="73" text-anchor="middle">Keep it</text><text class="ts" x="630" y="92" text-anchor="middle">faster, same quality</text></g>
+      <path class="ln" d="M160 78 H198" marker-end="url(#ah2)"/>
+      <path class="ln" d="M340 78 H378" marker-end="url(#ah2)"/>
+      <path class="ln a" d="M520 78 H558" marker-end="url(#ah2)"/>
+      <text class="tm ta" x="539" y="68" text-anchor="middle">held</text>
+      <path class="ln w" d="M450 106 V158 H270 V110" marker-end="url(#ah2)"/>
+      <text class="tm tw" x="360" y="180" text-anchor="middle">quality dropped: back off or try another technique</text>
+    </svg>
+    </div>
+  </div>
+  <p>Evals differ from standard intelligence benchmarks such as MMLU or SWE-bench. Benchmarks measure capability on common tasks, while evals are tailored to your product, domain and tasks. Benchmarks are useful for shortlisting models, but they saturate and get gamed. Goodhart's Law says that when a measure becomes a target, it stops being a good measure, and frontier labs have a strong incentive to post record benchmark scores. Elo rating from head-to-head win rates gives a better read on overall intelligence, but nothing replaces measuring how a model performs in your application.</p>
+  <div class="cards">
+    <div class="card lift"><h4>Look at your data</h4><p>Check eval results against your intuition for the product and problem.</p></div>
+    <div class="card lift"><h4>Be precise</h4><p>Know the hardest problems the model must solve and focus the evals there.</p></div>
+    <div class="card lift"><h4>Use tools</h4><p>Evaluation is a fundamental problem in AI engineering, so do not reinvent it.</p></div>
+  </div>
+
+  <h3 class="sub-h"><span class="kick">1.3.2</span>Fine-tuning for domain-specific quality</h3>
+  <p>Fine-tuning takes a pre-trained foundation model and adapts it to a specific use case by introducing new data. The model's weights change while its overall architecture stays the same. If you can fine-tune a small model to pass your evals, hitting latency and cost targets gets much easier.</p>
+
+  <div class="fig" id="f-ft">
+    <p class="fig-cap">Fig. H · Same shape, new values · illustrative weights</p>
+    <div class="ft-wrap">
+      <div>
+        <div class="grid6" id="ft-grid" role="img" aria-label="A six by six grid of small numbers standing in for model weights"></div>
+        <div class="ctl" style="grid-template-columns:1fr;margin-top:12px"><div><label for="ft-v">Fine-tuning <output id="ft-o">0%</output></label><input id="ft-v" type="range" min="0" max="100" value="0"></div></div>
+      </div>
+      <div class="read" style="margin-top:0" aria-live="polite"><h4>What changed</h4><p><strong id="ft-n">0</strong> of 36 values differ from the pre-trained model. The grid is still 6 by 6, so the architecture is the same. Fine-tuning moves some of the numbers.</p></div>
+    </div>
+  </div>
+  <p>Text-to-SQL is a strong example. General-purpose coding models are good at SQL but have hundreds of billions of parameters. SQL is a constrained language, so an application that only turns natural-language prompts into queries can reach equivalent performance with a tiny fine-tuned model of a few billion parameters. Most domains will not shrink that far. This works when you have three things.</p>
+  <div class="chiprow"><span class="chip">cleanly scoped domain</span><span class="chip">strong evaluation criteria</span><span class="chip">high-quality labeled data</span></div>
+
+  <h3 class="sub-h"><span class="kick">1.3.3</span>Distillation</h3>
+  <p>Distillation keeps most of a large model's intelligence at a fraction of the size. A large teacher model trains a smaller student to emulate its behavior. Unlike fine-tuning on input-output pairs, the student sees the teacher's actual probability distributions and not only its final answers. Fine-tuning teaches a model to do better in a domain. Distillation teaches it to copy the behavior of a larger model, good and bad.</p>
+
+  <div class="fig" id="f-ds">
+    <p class="fig-cap">Fig. I · What the student is shown · illustrative probabilities</p>
+    <div class="row" id="ds-modes" role="group" aria-label="Training signal" style="margin-bottom:12px">
+      <button class="btn" type="button" data-m="hard" aria-pressed="false">Final answer only</button>
+      <button class="btn" type="button" data-m="soft" aria-pressed="true">Teacher's distribution</button>
+    </div>
+    <p class="note" style="margin:0 0 8px">Next token after "Write a query to list customers:" with the target shown to the student.</p>
+    <div id="ds-bars" aria-live="polite"></div>
+    <div class="read" id="ds-read"><h4></h4><p></p></div>
+  </div>
+  <p>Distillation sees substantially less real-world use than fine-tuning. When a frontier lab releases a family of models in different sizes, the small ones are usually trained independently, so that the biases of the large model do not cap the small ones. Distillation matters mainly when a lab only trains a large model and wants to make it accessible.</p>
+  <p>The best-known case is DeepSeek-R1, released in January 2025 at 671B parameters. DeepSeek also released distilled versions built on the most popular architectures of the time, Llama 3 and Qwen 2.5. They showed similar reasoning behavior with lower benchmark scores, and because they were small and used familiar architectures, they could reuse existing performance work.</p>
+
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th></th><th>Fine-tuning</th><th>Distillation</th></tr></thead>
+    <tbody>
+      <tr><td>Goal</td><td>Better performance in a specific domain</td><td>Emulate a larger model's behavior</td></tr>
+      <tr><td>Signal</td><td>Input-output pairs of new data</td><td>The teacher's probability distributions</td></tr>
+      <tr><td>Result</td><td>Small model matches a big one on a narrow task</td><td>Small model behaves like the big one, usually scoring lower</td></tr>
+      <tr><td>Real-world use</td><td>Common</td><td>Substantially less common</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 1.4 -->
+<section class="sec" id="s14" data-nav="1.4 Latency and throughput" data-chip="1.4">
+  <p class="kick">1.4</p>
+  <h2 class="sec-h">Measuring latency and throughput</h2>
+  <p>The two most common metrics for LLMs are <strong>TTFT</strong>, time to first token, and <strong>TPS</strong>, tokens per second. With streaming output, TTFT asks how long a user waits to see the first token. TPS asks how many tokens arrive each second after that. TTFT is driven by compute-bound prefill, and TPS is driven by bandwidth-bound decode. Lower TTFT and higher TPS both mean better latency.</p>
+
+  <div class="fig" id="f-tt">
+    <p class="fig-cap">Fig. J · The token timeline · move the sliders, then replay</p>
+    <div class="scroll">
+    <svg id="tt" viewBox="0 0 720 250" role="img" aria-label="Timeline. A prefill block of length TTFT, followed by evenly spaced tokens separated by the inter-token latency.">
+      <rect id="tt-pre" x="40" y="96" width="120" height="44" fill="var(--warn-soft)" stroke="var(--warn)" stroke-width="1.4"/>
+      <g id="tt-ticks"></g>
+      <path class="ln" d="M40 140 H680"/>
+      <text class="t tw" x="40" y="80">PREFILL, COMPUTE-BOUND</text>
+      <text class="t ta" x="680" y="80" text-anchor="end">DECODE, BANDWIDTH-BOUND</text>
+      <path id="tt-bt" class="ln w" d="M40 160 V170 H160 V160"/>
+      <text id="tt-lt" class="t tw" x="100" y="190" text-anchor="middle">TTFT 500 ms</text>
+      <path id="tt-bi" class="ln a" d="M160 205 V215 H180 V205"/>
+      <text id="tt-li" class="t ta" x="170" y="236" text-anchor="middle">ITL 25 ms</text>
+      <line id="tt-head" x1="40" y1="90" x2="40" y2="146" class="ln" style="stroke:var(--ink);opacity:0"/>
+    </svg>
+    </div>
+    <div class="row" style="margin-top:10px"><button class="btn" type="button" id="tt-play">Replay</button><span class="note" id="tt-count" aria-live="polite">First 12 tokens shown. Replay is compressed to a few seconds.</span></div>
+    <div class="ctl">
+      <div><label for="tt-ttft">Time to first token <output id="tt-ttft-o">500 ms</output></label><input id="tt-ttft" type="range" min="50" max="3000" step="50" value="500"></div>
+      <div><label for="tt-itl">Inter-token latency <output id="tt-itl-o">25 ms</output></label><input id="tt-itl" type="range" min="5" max="120" step="5" value="25"></div>
+      <div><label for="tt-users">Concurrent users <output id="tt-users-o">40</output></label><input id="tt-users" type="range" min="1" max="200" value="40"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><small>Perceived TPS</small><b id="tt-tps">40</b><span>tokens per second, per user</span></div>
+      <div class="stat"><small>Time to 100 tokens</small><b id="tt-100">2.98 s</b><span>TTFT plus 99 gaps</span></div>
+      <div class="stat"><small>Total TPS</small><b id="tt-total">1,600</b><span>whole service, same rate for all</span></div>
+    </div>
+  </div>
+
+  <p>TTFT is a clear term, but TPS is less precise. It can mean tokens per second per user, which is a latency metric, or tokens per second for the whole service, which is a throughput metric. Most people mean the per-user kind. When it matters, use the specific terms.</p>
+  <div class="cards">
+    <div class="card lift"><h4>Perceived TPS</h4><p>Tokens per second each user sees after the first token. A latency metric.</p></div>
+    <div class="card lift"><h4>Total TPS</h4><p>Tokens generated per second by the whole service. A throughput metric.</p></div>
+    <div class="card lift"><h4>Inter-token latency</h4><p>Time between subsequent tokens. An ITL of 10 ms equals 100 tokens per second per user.</p></div>
+  </div>
+  <p>TTFT and TPS suit user-facing systems that stream output, such as chatbots. For something like an agent's tool call, the tokens are not useful one by one, so you measure total response time instead.</p>
+
+  <h3 class="sub-h"><span class="kick">1.4.1</span>Latency percentiles</h3>
+  <p>The naive approach is to look at average TTFT or TPS, which hides the shape of the distribution. Total LLM response time is right-skewed. Most requests cluster near a mode, and outliers take far longer. If one request in ten takes several seconds, the product does not feel snappy, so engineers measure percentiles.</p>
+
+  <div class="fig" id="f-pct">
+    <p class="fig-cap">Fig. K · A right-skewed response time · illustrative, median 0.8 s · move across the curve</p>
+    <div class="scroll">
+    <svg id="pct" viewBox="0 0 720 360" role="img" aria-label="A right-skewed distribution of response times with markers for median, mean and the 90th, 95th and 99th percentiles." style="cursor:ew-resize;touch-action:pan-y">
+      <defs>
+        <clipPath id="clipL"><rect id="clipL-r" x="60" y="0" width="150" height="300"/></clipPath>
+        <clipPath id="clipR"><rect id="clipR-r" x="210" y="0" width="480" height="300"/></clipPath>
+      </defs>
+      <path id="pct-areaL" d="" fill="var(--acc-soft)" clip-path="url(#clipL)"/>
+      <path id="pct-areaR" d="" fill="var(--warn-soft)" clip-path="url(#clipR)"/>
+      <path id="pct-curve" class="ln draw" pathLength="1" d="" style="stroke:var(--ink)"/>
+      <path class="ln" d="M60 40 V290 H690"/>
+      <g id="pct-marks"></g>
+      <line id="pct-scrub" x1="210" y1="44" x2="210" y2="290" class="ln dash" style="stroke:var(--ink);stroke-width:1.2"/>
+      <circle id="pct-handle" cx="210" cy="290" r="5" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.4"/>
+      <text class="tm" x="686" y="272" text-anchor="end">response time</text>
+    </svg>
+    </div>
+    <div class="ctl"><div><label for="pct-t">Response time threshold <output id="pct-o">1.73 s</output></label><input id="pct-t" type="range" min="0.2" max="4" step="0.01" value="1.73"></div></div>
+    <div class="read warn" aria-live="polite"><h4>Reading</h4><p id="pct-read"></p></div>
+  </div>
+
+  <div class="ft-wrap" style="grid-template-columns:minmax(0,1fr) 210px;align-items:center;margin:24px 0">
+    <div class="tblwrap"><table class="tbl" id="pct-tbl" style="margin:0">
+      <thead><tr><th>Name</th><th>Meaning</th><th>Slower than it</th></tr></thead>
+      <tbody>
+        <tr data-k="50" tabindex="0"><td>P50</td><td>Median latency</td><td>1 in 2 requests</td></tr>
+        <tr data-k="10" tabindex="0"><td>P90</td><td>90th percentile</td><td>1 in 10 requests</td></tr>
+        <tr data-k="5" tabindex="0"><td>P95</td><td>95th percentile</td><td>1 in 20 requests</td></tr>
+        <tr data-k="1" tabindex="0"><td>P99</td><td>99th percentile</td><td>1 in 100 requests</td></tr>
+      </tbody>
+    </table></div>
+    <div>
+      <svg id="pct-dots" viewBox="0 0 200 200" role="img" aria-label="One hundred requests ordered fastest to slowest. The slowest ones for the selected percentile are highlighted." style="display:block;width:100%;max-width:210px;margin:0 auto"></svg>
+      <p class="note" style="text-align:center;margin:6px 0 0">100 requests, slowest at bottom right</p>
+    </div>
+  </div>
+  <p>Driving down the average still matters, but good performance work also reduces P90 and P99 latency, which gives users a more reliable experience.</p>
+
+  <h3 class="sub-h"><span class="kick">1.4.2</span>End-to-end metrics</h3>
+  <p>The other distinction is whether you measure only inference time, the on-GPU time to generate tokens, or the end-to-end time that includes network latency and queueing. Both are useful. Inference time tells you how effective your model performance work is. End-to-end time shows what your users perceive. When inference is fast but end-to-end is slow, turn to infrastructure instead of model optimization.</p>
+
+  <div class="fig" id="f-e2e">
+    <p class="fig-cap">Fig. L · Where the time goes · illustrative · diagnosis rule is mine</p>
+    <div class="row" id="e2e-presets" role="group" aria-label="Examples" style="margin-bottom:14px">
+      <button class="btn" type="button" data-v="160,700,400" aria-pressed="true">Slow infrastructure</button>
+      <button class="btn" type="button" data-v="60,40,1400" aria-pressed="false">Slow model</button>
+    </div>
+    <div class="e2e-bar" id="e2e-bar" role="img" aria-label="Stacked bar of network up, queue, GPU inference, network down">
+      <span class="seg-net" id="sg-up"></span><span class="seg-q" id="sg-q"></span><span class="seg-gpu" id="sg-gpu"></span><span class="seg-net" id="sg-down"></span>
+    </div>
+    <div class="legend"><span><i class="seg-net"></i>network, both ways</span><span><i class="seg-q"></i>queue wait</span><span><i class="seg-gpu"></i>inference on GPU</span></div>
+    <div class="brk-wrap" id="brk-wrap">
+      <div class="brk" id="brk-inf"><span id="brk-inf-l">inference time</span></div>
+      <div class="brk" id="brk-all" style="top:50px;left:0;width:100%"><span id="brk-all-l">end-to-end time</span></div>
+    </div>
+    <div class="ctl">
+      <div><label for="e2e-net">Network, round trip <output id="e2e-net-o">160 ms</output></label><input id="e2e-net" type="range" min="10" max="800" step="10" value="160"></div>
+      <div><label for="e2e-q">Queue wait <output id="e2e-q-o">700 ms</output></label><input id="e2e-q" type="range" min="0" max="2000" step="20" value="700"></div>
+      <div><label for="e2e-inf">Inference <output id="e2e-inf-o">400 ms</output></label><input id="e2e-inf" type="range" min="50" max="3000" step="50" value="400"></div>
+    </div>
+    <div class="read" id="e2e-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+</section>
+
+<!-- MAP -->
+<section class="sec" id="map" data-nav="Chapter map" data-chip="Map">
+  <p class="kick">Summary</p>
+  <h2 class="sec-h">Chapter map</h2>
+  <p>The whole chapter on one page. Each branch is a section, and each leaf is the idea to remember from it.</p>
+  <div class="fig" id="f-map">
+    <p class="fig-cap">Fig. M · Chapter 1 at a glance · synthesis</p>
+    <div class="scroll"><svg id="map-svg" viewBox="0 0 720 500" role="img" aria-label="Mind map of chapter 1 with four branches: specialize, know your app, pick the model, measure."></svg></div>
+  </div>
+</section>
+
+<!-- RECALL -->
+<section class="sec" id="recall" data-nav="Recall check" data-chip="Recall">
+  <p class="kick">Retention</p>
+  <h2 class="sec-h">Recall check</h2>
+  <p>Answer in your head first, then select the card. Coming back to these in a week works better than rereading the chapter.</p>
+  <div class="fcs" id="fcs"></div>
+</section>
+
+</main>
+</div>
+<footer id="notes-foot"></footer>
+<script src="/notes/assets/library.js"></script>
+<script src="/notes/assets/notes.js"></script>
+<script src="/notes/inference-engineering/ch1/figures.js"></script>
+</body>
+</html>
