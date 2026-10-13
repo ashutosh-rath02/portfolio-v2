@@ -222,11 +222,14 @@
     var books = $('#notes-books');
     if (books) {
       books.innerHTML = LIB.map(function (b) {
-        var live = b.chapters.filter(function (c) { return c.status === 'live'; }).length;
-        return '<article class="book"><h2><a href="' + bookHref(b) + '" style="text-decoration:none">' + esc(b.title) + '</a></h2>' +
-          '<p class="meta">' + esc(b.author) + ' · ' + esc(b.publisher) + ' · ' + b.year + ' · ' + live + ' of ' + b.chapters.length + ' chapters written</p>' +
-          '<p>' + esc(b.summary) + '</p>' + tocRows(b, false) + '</article>';
-      }).join('');
+        var live = b.chapters.filter(function (c) { return c.status === 'live'; }).length, total = b.chapters.length;
+        return '<a class="bk lift" href="' + bookHref(b) + '">' +
+          '<span class="bk-meta">' + esc(b.author) + ' · ' + b.year + '</span>' +
+          '<h2>' + esc(b.title) + '</h2>' +
+          '<p>' + esc(b.summary) + '</p>' +
+          '<span class="bk-prog"><i style="width:' + Math.round(live / total * 100) + '%"></i></span>' +
+          '<span class="bk-foot"><span>' + live + ' of ' + total + ' chapters</span><span class="bk-go">Open notes</span></span></a>';
+      }).join('') + '<div class="bk bk-next" aria-label="Upcoming books"><span class="bk-meta">Next</span><h2>More books</h2><p>New books join this shelf as I finish them. Each one gets the same treatment.</p></div>';
     }
     var chs = $('#notes-chapters');
     if (chs && book) chs.innerHTML = tocRows(book, true);

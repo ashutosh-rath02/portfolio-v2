@@ -269,3 +269,16 @@ footer p{max-width:78ch}
     .sec-h::after{animation:underline linear both;animation-timeline:view();animation-range:entry 20% entry 90%}
   }
 }
+
+/* library shelf */
+.books{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.bk{display:flex;flex-direction:column;gap:10px;padding:22px 22px 18px;border:1px solid var(--line);background:var(--panel);color:var(--ink);text-decoration:none;transition:border-color .2s}
+a.bk:hover,a.bk:focus-visible{border-color:var(--acc)}
+.bk h2{font:400 clamp(30px,4vw,40px)/1.05 var(--fd);margin:0}
+.bk p{margin:0;font-size:15px;line-height:1.55;color:var(--ink2);max-width:none}
+.bk-meta{font:400 11.5px var(--fm);letter-spacing:.07em;text-transform:uppercase;color:var(--acc-ink)}
+.bk-prog{display:block;height:4px;border:1px solid var(--ink);margin-top:auto}
+.bk-prog i{display:block;height:100%;background:var(--acc)}
+.bk-foot{display:flex;justify-content:space-between;font:400 12px var(--fm);color:var(--ink2)}
+.bk-go{color:var(--acc-ink)}
+.bk-next{border-style:dashed;background:transparent}
