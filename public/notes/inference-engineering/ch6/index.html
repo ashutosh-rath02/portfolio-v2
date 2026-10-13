@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Modalities | Inference Engineering notes</title>
+<meta name="description" content="Animated visual notes for chapter 6 of Inference Engineering by Philip Kiely: vision, embeddings, speech and image or video generation.">
+<meta property="og:title" content="Modalities | Inference Engineering notes">
+<meta property="og:description" content="Animated visual notes for chapter 6 of Inference Engineering by Philip Kiely.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.ashutoshrath.me/notes/inference-engineering/ch6">
+<link rel="canonical" href="https://www.ashutoshrath.me/notes/inference-engineering/ch6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/notes/assets/notes.css">
+<script>try{var t=localStorage.getItem('notes-theme');if(t!=='light'&&t!=='dark'){t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark')t=''}if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-page="chapter" data-book="inference-engineering" data-chapter="6">
+<header id="notes-top"></header>
+<div class="shell">
+<aside class="rail" id="notes-rail" aria-label="Contents"></aside>
+<main>
+
+<section class="sec" id="overview" data-nav="Overview" data-chip="Overview" style="padding-top:56px">
+  <p class="eyebrow">Chapter 6 · Philip Kiely, Inference Engineering</p>
+  <h1 class="display">Modalities</h1>
+  <p class="lede">Models can take and produce text, images, audio, video and vectors, yet nearly all of them fall into two archetypes: autoregressive token generation or iterative denoising. The LLM toolbox carries over to most, but each modality changes what you measure and what you optimize.</p>
+  <div class="fig" id="f-arch">
+    <p class="fig-cap">Fig. A · Many modalities, two archetypes · synthesis · select a model type</p>
+    <div class="scroll"><svg id="arch" viewBox="0 0 720 200" role="group" aria-label="Modalities grouped into autoregressive token generation and iterative denoising"></svg></div>
+    <div class="read" id="arch-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+
+  <ol class="summary" aria-label="The chapter in parts">
+    <li><a href="#s61">6.1</a><span>VLMs add image tokens. Prefill and the KV cache grow, so every LLM technique helps.</span></li>
+    <li><a href="#s62">6.2</a><span>Embeddings split into backfill throughput and low-latency lookup. Scale out with one replica per GPU.</span></li>
+    <li><a href="#s63">6.3</a><span>ASR is an encoder-decoder. Streaming and parallel chunking drive the gains.</span></li>
+    <li><a href="#s64">6.4</a><span>TTS is a fine-tuned LLM plus an audio decoder. Measure time to first byte and concurrent streams.</span></li>
+    <li><a href="#s65">6.5</a><span>Image models are compute bound, so choose kernels, fuse, compile and trim guidance.</span></li>
+    <li><a href="#s66">6.6</a><span>Video is the heaviest. Attention dominates, and context parallelism spreads it over eight GPUs.</span></li>
+  </ol>
+</section>
+
+<section class="sec" id="intro" data-nav="What a modality is" data-chip="Intro">
+  <p class="kick">Before 6.1</p>
+  <h2 class="sec-h">Modalities and how to measure them</h2>
+  <p>A modality is the pair of input and output types a model handles: text and images to text for vision language, audio to text for transcription, text to audio for speech, text to image or video for generation, and so on. Many of the same engines and techniques apply, but each modality needs its own idea of latency. A single audio token is meaningless, so instead of time to first token you measure time to first word or sentence.</p>
+</section>
+
+<section class="sec" id="s61" data-nav="6.1 Vision language" data-chip="6.1">
+  <p class="kick">Section 6.1</p>
+  <h2 class="sec-h">Vision language models</h2>
+  <p>A VLM takes images or video plus a prompt and returns text. It has a large LLM and a small vision encoder, for example a 2B encoder beside a 673B LLM in Mistral Large 3. The encoder is small but critical, and its architecture varies, so runtime support is more fragmented, which raises the importance of vLLM and SGLang. A high-resolution image adds roughly a thousand visual tokens, so the main challenge is a longer input and a bigger KV cache.</p>
+  <div class="fig" id="f-img">
+    <p class="fig-cap">Fig. B · Image tokens add up · illustrative, using the book's rule of about 1,000 tokens per high-resolution image · choose images and resolution</p>
+    <div id="img-calc"></div>
+  </div>
+  <div class="fig" id="f-vt">
+    <p class="fig-cap">Fig. C · Techniques that carry over · select one</p>
+    <div id="vt-tabs"></div>
+  </div>
+  <p>VLMs also add a quality and speed trade: downsampling. A high-resolution image costs about four times the tokens of a low-resolution one. Single images rarely need it, while multiple images or clips may.</p>
+  <h3 class="sub-h">6.1.1 Video input</h3>
+  <p>Video has motion and sometimes audio, which most VLMs cannot hear, so audio is transcribed separately. Quality needs the whole clip in one call. At 24 frames per second and about 1,000 tokens per frame, four seconds approaches 100,000 tokens, so downsampling resolution and frame rate is practically obligatory, and clips stay short.</p>
+  <div class="fig" id="f-vid">
+    <p class="fig-cap">Fig. D · Video input tokens · illustrative · choose clip length and frame rate</p>
+    <div id="vid-calc"></div>
+  </div>
+  <h3 class="sub-h">6.1.2 Omni-modal models</h3>
+  <p>Omni models accept and produce many modalities, but smaller specialists are often faster and more accurate. Built-in text recognition lags dedicated OCR models that are a fraction of the size. Production VLM work often chains preprocessors for PDFs, OCR and audio, and each stage should be optimized and scaled on its own.</p>
+</section>
+
+<section class="sec" id="s62" data-nav="6.2 Embeddings" data-chip="6.2">
+  <p class="kick">Section 6.2</p>
+  <h2 class="sec-h">Embedding models</h2>
+  <p>An embedding model maps variable length input to a fixed length vector that captures meaning, so closeness can be computed with simple math. They power agent memory, RAG, search and recommendations. Two traffic profiles exist, and you should decide which you serve, or build a separate system for each if traffic justifies it.</p>
+  <div class="fig" id="f-emb">
+    <p class="fig-cap">Fig. B · Two embedding workloads · select a profile</p>
+    <div id="emb-cmp"></div>
+  </div>
+  <h3 class="sub-h">6.2.1 Architecture</h3>
+  <p>Models are either BERT style, encoder only and usually under 1B parameters, good for simple latency sensitive tasks like classification, or LLM based, up to about 8B and much more capable. Vector length trades speed and quality. Matryoshka representations keep information in shorter vectors. Dimensionality barely changes inference time but changes storage, retrieval and similarity cost. Vectors from different models cannot be compared, even at equal length.</p>
+  <div class="fig" id="f-dim">
+    <p class="fig-cap">Fig. C · What dimensionality costs downstream · illustrative arithmetic, FP32 vectors · choose size</p>
+    <div id="dim-calc"></div>
+  </div>
+  <h3 class="sub-h">6.2.2 Inference</h3>
+  <p>Runtimes include vLLM, SGLang, Infinity and Hugging Face TEI, but the best performance comes from adapting TensorRT-LLM, with its XQA attention kernel and fusion. FP8 weights give gains with minimal quality loss. Check quality by running the same inputs through both models and comparing output vectors with cosine similarity, looking for at least 99 percent. Prefix caching and disaggregation do not apply because tokens are processed in parallel, and multi-GPU parallelism is not worth it for small models. Scale horizontally with one replica per GPU. Batches can hold dozens or hundreds of inputs, and a robust queue is needed for backfills and surges.</p>
+</section>
+
+<section class="sec" id="s63" data-nav="6.3 ASR" data-chip="6.3">
+  <p class="kick">Section 6.3</p>
+  <h2 class="sec-h">ASR models</h2>
+  <p>ASR turns audio into text. The popular open model is Whisper, an encoder-decoder with a 1.55B parameter largest size, so it runs well on MIG slices of an H100. The encoder reads a log-Mel spectrogram, and the decoder, an LLM-like autoregressive transformer, takes most of the time. TensorRT-LLM gives in-flight batching and fast kernels for it.</p>
+  <h3 class="sub-h">6.3.1 Real-time chunks</h3>
+  <p>For live use, aim for about 200 ms per chunk, roughly human reaction time. The runtime is already tuned, so gains come from streaming at the API layer: a WebSocket carries audio in and text out, and a voice activity detection model segments the stream into chunks. Processing chunks on one GPU lets each output seed the next.</p>
+  <h3 class="sub-h">6.3.2 Long files</h3>
+  <p>Whisper handles 30 second chunks, so long files need a pipeline. Performance is the real-time factor: an hour transcribed in 30 minutes is 2x, and an optimized system can do an hour in under four seconds, 1000x. Run VAD on its own hardware to cut silence and split at speech boundaries, transcribe chunks in parallel, and stitch by timestamp. RTF scales roughly linearly with GPUs.</p>
+  <div class="fig" id="f-rtf">
+    <p class="fig-cap">Fig. B · Real-time factor with parallel GPUs · illustrative, assuming 125x per GPU · choose audio length and GPUs</p>
+    <div id="rtf-calc"></div>
+  </div>
+  <div class="fig" id="f-asrflow">
+    <p class="fig-cap">Fig. C · Long file pipeline · synthesis · press play</p>
+    <div class="scroll"><svg id="asrflow" viewBox="0 0 720 150" role="group" aria-label="VAD, chunks, parallel transcription, stitch"></svg></div>
+    <div class="row" style="margin-top:12px"><button class="btn" type="button" id="asrflow-play">Walk the pipeline</button></div>
+    <div class="read" id="asrflow-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <p>Parallel chunks lose the previous-output prefix, but you can detect hallucinations by compression ratio and words per minute, and then re-run the chunk at a higher temperature to break repetition, or re-chunk into smaller pieces.</p>
+  <h3 class="sub-h">6.3.3 Diarization</h3>
+  <p>Diarization labels who spoke when. It is a pipeline of classic ML models for segmentation, embedding and clustering, such as pyannote audio. Optimize each model and the orchestration with PyTorch and compilation. Even a tuned system takes at least twice as long as transcription.</p>
+</section>
+
+<section class="sec" id="s64" data-nav="6.4 TTS" data-chip="6.4">
+  <p class="kick">Section 6.4</p>
+  <h2 class="sec-h">TTS models</h2>
+  <p>Modern TTS models are fine-tuned LLMs. Orpheus TTS comes from Llama 3.2 3B, with its vocabulary extended by tens of thousands of audio tokens, so LLM tooling applies. Weights and KV cache can go to FP8, and MIGs on H100s work well. An audio decoder, compiled in PyTorch and using dynamic batching with a short timeout such as 15 ms, converts audio tokens to a waveform. In-flight batching is not possible there, and it can become a bottleneck.</p>
+  <div class="fig" id="f-ttsflow">
+    <p class="fig-cap">Fig. B · TTS pipeline · synthesis · select a stage</p>
+    <div class="scroll"><svg id="ttsflow" viewBox="0 0 720 150" role="group" aria-label="Text to LLM to audio tokens to decoder to waveform"></svg></div>
+    <div class="read" id="ttsflow-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <p>The key metrics are TTFB, the equivalent of TTFT (about 150 ms is reachable on one H100 for Orpheus), the more user oriented time to first sentence, and TPS. Real-time speech needs only about 80 to 100 tokens per second per stream, and more speed adds nothing. Instead, raise the number of concurrent real-time streams to lower cost per user.</p>
+  <div class="fig" id="f-streams">
+    <p class="fig-cap">Fig. C · Concurrent streams per GPU · illustrative · set GPU throughput and per-stream need</p>
+    <div id="streams-calc"></div>
+  </div>
+  <h3 class="sub-h">6.4.1 Streaming TTS</h3>
+  <p>Again the biggest win is infrastructure: stream over WebSockets and match batch size to the number of active sockets after load testing how many streams the engine sustains. TTS is rarely batch, and quality degrades on inputs past about 30 seconds.</p>
+  <h3 class="sub-h">6.4.2 Speech-to-speech</h3>
+  <p>Most voice systems cascade ASR, an LLM and TTS, with VAD and embedding helpers. Speech-to-speech models such as gpt-realtime merge these into one model because the three share similar decoder architectures. At publication no open option is commercially viable, and closed ones are less capable and costlier than cascades, but research is active.</p>
+  <div class="fig" id="f-s2s">
+    <p class="fig-cap">Fig. D · Cascade versus unified · qualitative, at time of publication · choose one</p>
+    <div id="s2s-cmp"></div>
+  </div>
+</section>
+
+<section class="sec" id="s65" data-nav="6.5 Image generation" data-chip="6.5">
+  <p class="kick">Section 6.5</p>
+  <h2 class="sec-h">Image generation models</h2>
+  <p>Image models differ from LLMs in architecture (pipelines of small models in latent space, mostly denoisers), tooling (SGLang Diffusion and vLLM Omni are brand new, so work often sits in PyTorch or TensorRT), constraints (10 to 20 times smaller than frontier LLMs and compute bound) and quality, which is hard to score programmatically and is usually judged by humans choosing between images.</p>
+  <h3 class="sub-h">6.5.1 Kernels</h3>
+  <p>Model cards use diffusers with few optimizations. Even though the work is compute bound, you often need memory efficient kernels and fusion to reach that limit.</p>
+  <div class="fig" id="f-ik">
+    <p class="fig-cap">Fig. B · Three ways to run image models · select one</p>
+    <div id="ik-tabs"></div>
+  </div>
+  <p>Attention is the key kernel, with FlashAttention 3 on Hopper and 4 on Blackwell beating version 2. Small kernels like RMSNorm are good fusion targets, and GEMM kernels are generally safe to quantize to FP8 for twice the Tensor Core FLOPS. Torch compilation fuses automatically, takes minutes so cache the result, and must be done on the same GPU type you deploy on.</p>
+  <h3 class="sub-h">6.5.2 One weird trick</h3>
+  <p>Time scales linearly with steps. Each step runs the denoiser twice, with and without guidance. Early steps set the outline and later steps fill details, so turn guidance off partway: skipping it for the last 20 of 50 steps leaves 80 passes instead of 100, usually with quality intact.</p>
+  <div class="fig" id="f-guid">
+    <p class="fig-cap">Fig. C · Guidance cutoff · from the book's 50 step example · choose how many late steps skip guidance</p>
+    <div id="guid-calc"></div>
+  </div>
+</section>
+
+<section class="sec" id="s66" data-nav="6.6 Video generation" data-chip="6.6">
+  <p class="kick">Section 6.6</p>
+  <h2 class="sec-h">Video generation models</h2>
+  <p>Video is the most demanding modality. Run it on Blackwell or Rubin when possible, for memory capacity to support context parallelism, fast Tensor Cores and microscaling formats. It is compute bound denoising over a 3D latent with about 50 steps, with far more data per step. Batching does not help, so models run on a full eight GPU node at batch size one, and the only way to improve throughput and cost is a faster model. Attention is 70 to 80 percent of compute time.</p>
+  <div class="fig" id="f-amd">
+    <p class="fig-cap">Fig. B · Why attention is the target · illustrative Amdahl arithmetic · choose attention share and speedup</p>
+    <div id="amd-calc"></div>
+  </div>
+  <h3 class="sub-h">6.6.1 Attention optimization and quantization</h3>
+  <p>Start by testing kernels from FlashAttention, DeepGEMM, CuTe and CUTLASS. Caching reuses earlier computation, and can make generation 30 to 40 percent faster, but quality varies from negligible loss to unusable, so test. Quantization focuses on attention because for video the Tensor Core FLOPS matter, not memory traffic.</p>
+  <div class="fig" id="f-vq">
+    <p class="fig-cap">Fig. C · Video speed techniques · select one</p>
+    <div id="vq-tabs"></div>
+  </div>
+  <h3 class="sub-h">6.6.2 Context parallelism</h3>
+  <p>Eight GPUs usually run context parallelism rather than tensor parallelism. Every GPU holds the full weights, which is feasible on a B200, and the attention computation is split. In ring attention, each GPU holds a piece of the context and passes intermediate results around a ring. Attention heads are independent, so they can run separately and combine afterward. Other steps parallelize too: VAE latent decoding takes three to five percent of the time and can run across GPUs.</p>
+  <div class="fig" id="f-cp">
+    <p class="fig-cap">Fig. D · Context versus tensor parallelism · select one</p>
+    <div id="cp-cmp"></div>
+  </div>
+</section>
+
+<section class="sec" id="map" data-nav="Chapter map" data-chip="Map">
+  <p class="kick">Summary</p>
+  <h2 class="sec-h">Chapter map</h2>
+  <p>The whole chapter on one page. Each branch is a section, and each leaf is the idea to remember from it.</p>
+  <div class="fig" id="f-map">
+    <p class="fig-cap">Fig. M · Chapter 6 at a glance · synthesis</p>
+    <div class="scroll"><svg id="map-svg" viewBox="0 0 720 640" role="img" aria-label="Mind map of chapter 6."></svg></div>
+  </div>
+</section>
+
+<section class="sec" id="recall" data-nav="Recall check" data-chip="Recall">
+  <p class="kick">Retention</p>
+  <h2 class="sec-h">Recall check</h2>
+  <p>Answer in your head first, then select the card. Coming back to these in a week works better than rereading the chapter.</p>
+  <div class="fcs" id="fcs"></div>
+</section>
+
+</main>
+</div>
+<footer id="notes-foot"></footer>
+<script src="/notes/assets/library.js"></script>
+<script src="/notes/assets/notes.js"></script>
+<script src="/notes/inference-engineering/ch6/figures.js"></script>
+</body>
+</html>

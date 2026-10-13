@@ -34,6 +34,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
     },
     {
+      url: "https://www.ashutoshrath.me/notes/inference-engineering/ch0",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+    },
+    {
+      url: "https://www.ashutoshrath.me/notes/inference-engineering/ch2",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+    },
+    {
+      url: "https://www.ashutoshrath.me/notes/inference-engineering/ch3",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+    },
+    {
+      url: "https://www.ashutoshrath.me/notes/inference-engineering/ch4",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+    },
+    {
+      url: "https://www.ashutoshrath.me/notes/inference-engineering/ch5",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+    },
+    {
+      url: "https://www.ashutoshrath.me/notes/inference-engineering/ch6",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+    },
+    {
+      url: "https://www.ashutoshrath.me/notes/inference-engineering/ch7",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+    },
+    {
       url: `${process.env.NEXT_PUBLIC_BASE_URL}/blog/memoizatoion`,
       lastModified: new Date(),
       changeFrequency: "monthly",

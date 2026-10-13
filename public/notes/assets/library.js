@@ -15,7 +15,8 @@ window.NOTES_LIBRARY = [
     credit:
       'The text is paraphrased and every figure is redrawn from scratch. Figures marked illustrative use made-up numbers to show a shape, and figures marked synthesis are my own arrangement of the chapter’s points. The ideas belong to the author, so read the book for the full treatment.',
     chapters: [
-      { n: 0, title: 'Inference', status: 'soon', topics: [] },
+      { n: 0, title: 'Inference', status: 'live',
+        pages: '15 to 22', topics: [] },
       {
         n: 1,
         title: 'Prerequisites',
@@ -31,7 +32,8 @@ window.NOTES_LIBRARY = [
       {
         n: 2,
         title: 'Models',
-        status: 'soon',
+        status: 'live',
+        pages: '39 to 70',
         topics: [
           'Neural networks',
           'LLM inference mechanics',
@@ -43,7 +45,8 @@ window.NOTES_LIBRARY = [
       {
         n: 3,
         title: 'Hardware',
-        status: 'soon',
+        status: 'live',
+        pages: '71 to 92',
         topics: [
           'GPU architecture',
           'GPU architecture generations',
@@ -55,7 +58,8 @@ window.NOTES_LIBRARY = [
       {
         n: 4,
         title: 'Software',
-        status: 'soon',
+        status: 'live',
+        pages: '93 to 116',
         topics: [
           'CUDA',
           'Deep learning frameworks and libraries',
@@ -67,7 +71,8 @@ window.NOTES_LIBRARY = [
       {
         n: 5,
         title: 'Techniques',
-        status: 'soon',
+        status: 'live',
+        pages: '117 to 152',
         topics: [
           'Quantization',
           'Speculative decoding',
@@ -79,7 +84,8 @@ window.NOTES_LIBRARY = [
       {
         n: 6,
         title: 'Modalities',
-        status: 'soon',
+        status: 'live',
+        pages: '153 to 176',
         topics: [
           'Vision language models',
           'Embedding models',
@@ -91,7 +97,8 @@ window.NOTES_LIBRARY = [
       {
         n: 7,
         title: 'Production',
-        status: 'soon',
+        status: 'live',
+        pages: '177 to 205',
         topics: [
           'Containerization',
           'Autoscaling',

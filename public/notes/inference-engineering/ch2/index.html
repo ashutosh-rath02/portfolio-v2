@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Models | Inference Engineering notes</title>
+<meta name="description" content="Animated visual notes for chapter 2 of Inference Engineering by Philip Kiely: how LLMs and image models compute, and where their bottlenecks are.">
+<meta property="og:title" content="Models | Inference Engineering notes">
+<meta property="og:description" content="Animated visual notes for chapter 2 of Inference Engineering by Philip Kiely.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.ashutoshrath.me/notes/inference-engineering/ch2">
+<link rel="canonical" href="https://www.ashutoshrath.me/notes/inference-engineering/ch2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/notes/assets/notes.css">
+<script>try{var t=localStorage.getItem('notes-theme');if(t!=='light'&&t!=='dark'){t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark')t=''}if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-page="chapter" data-book="inference-engineering" data-chapter="2">
+<header id="notes-top"></header>
+<div class="shell">
+<aside class="rail" id="notes-rail" aria-label="Contents"></aside>
+<main>
+
+<section class="sec" id="overview" data-nav="Overview" data-chip="Overview" style="padding-top:56px">
+  <p class="eyebrow">Chapter 2 · Philip Kiely, Inference Engineering</p>
+  <h1 class="display">Models</h1>
+  <p class="lede">To make inference fast you have to know what the model is actually doing. This chapter opens up two families, autoregressive language models and iterative image generators, then uses simple arithmetic to find which resource limits each one.</p>
+  <div class="fig" id="f-gen">
+    <p class="fig-cap">Fig. A · How an LLM answers · synthesis · select a stage</p>
+    <div class="scroll"><svg id="gen" viewBox="0 0 720 150" role="group" aria-label="Prompt, tokenize, prefill, decode loop, output"></svg></div>
+    <div class="read" id="gen-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+
+  <ol class="summary" aria-label="The chapter in parts">
+    <li><a href="#s21">2.1</a><span>A network is layers of matrix multiplications with activations that bend the result.</span></li>
+    <li><a href="#s22">2.2</a><span>An LLM prefills the prompt once, then decodes one token at a time using a KV cache.</span></li>
+    <li><a href="#s23">2.3</a><span>Image models start from noise and denoise in 30 to 50 steps, each with two passes.</span></li>
+    <li><a href="#s24">2.4</a><span>Compare arithmetic intensity with the GPU ops:byte ratio. Prefill is compute bound, decode is memory bound.</span></li>
+    <li><a href="#s25">2.5</a><span>Attention is the costliest part, so kernels like FlashAttention and variants like sliding window matter.</span></li>
+  </ol>
+</section>
+
+<section class="sec" id="s21" data-nav="2.1 Neural networks" data-chip="2.1">
+  <p class="kick">Section 2.1</p>
+  <h2 class="sec-h">Neural networks</h2>
+  <p>A neural network is nodes arranged in layers: an input layer, hidden layers and an output layer. The values moving between layers are hidden states, and their width is the dimensionality. Modern LLMs are decoder only, while models like Whisper pair an encoder with a decoder.</p>
+  <h3 class="sub-h">2.1.1 Linear layers and matmul</h3>
+  <p>The workhorse is the linear layer, which multiplies the input by a weight matrix and adds a bias. Almost all the weights in a model sit in these layers, which is why inference is dominated by matrix multiplication.</p>
+  <h3 class="sub-h">2.1.2 Activation functions</h3>
+  <p>Stacked linear layers collapse into one linear layer, so a nonlinear activation sits between them. ReLU clips negatives, and smoother variants such as SiLU, Swish and SwiGLU are common in LLMs. Move the slider to compare them.</p>
+  <div class="fig" id="f-act">
+    <p class="fig-cap">Fig. B · Two activation functions · illustrative · drag the slider</p>
+    <div id="act-calc"></div>
+  </div>
+</section>
+
+<section class="sec" id="s22" data-nav="2.2 LLM inference mechanics" data-chip="2.2">
+  <p class="kick">Section 2.2</p>
+  <h2 class="sec-h">LLM inference mechanics</h2>
+  <p>Text is split into subword tokens from a vocabulary of over a hundred thousand entries. A request holds an input sequence, possibly a reasoning sequence and an output sequence, all inside the context window, with max_tokens as a cap. A chat template wraps messages into the exact format the model was trained on.</p>
+  <p>Generation has two phases. Prefill reads the whole prompt in parallel and builds the KV cache. Decode then produces one token per step: the model outputs a logits vector the size of the vocabulary, which is normalized and sampled until a stop token appears.</p>
+  <div class="fig" id="f-samp">
+    <p class="fig-cap">Fig. B · Sampling the next token · illustrative · change temperature and top-k</p>
+    <div id="samp-calc"></div>
+  </div>
+  <p>Temperature reshapes the distribution, top-k keeps only the k likeliest tokens, and top-p keeps the smallest set whose probability adds up to p. Logit biasing nudges specific tokens up or down.</p>
+  <h3 class="sub-h">2.2.1 and 2.2.2 Architecture and transformer blocks</h3>
+  <p>The model's config.json lists its sizes, and its name tells you a lot: a name such as Qwen3MoeForCausalLM says it is a mixture of experts model trained for causal language modeling. Instruct variants and fine-tunes (often LoRA) sit on top of a base model. Inside, an embedding layer feeds a stack of identical blocks, each with attention, a feed-forward network and normalization, and a final LM head produces the logits.</p>
+  <div class="fig" id="f-block">
+    <p class="fig-cap">Fig. C · The transformer stack · synthesis · select a part</p>
+    <div class="scroll"><svg id="block" viewBox="0 0 720 150" role="group" aria-label="Embedding, repeated blocks of attention and feed forward, LM head"></svg></div>
+    <div class="read" id="block-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <h3 class="sub-h">2.2.3 Attention</h3>
+  <p>Each token produces a query, a key and a value. Attention scores a query against all earlier keys, scales and normalizes the scores, and takes a weighted sum of the values. Multiple heads do this in parallel. A causal mask stops tokens from seeing the future. Without caching, every step would redo the work for all earlier tokens, which is why the KV cache exists.</p>
+  <div class="fig" id="f-kv">
+    <p class="fig-cap">Fig. D · Why the KV cache matters · illustrative · move the sequence length</p>
+    <div id="kv-calc"></div>
+  </div>
+  <h3 class="sub-h">2.2.4 Mixture of experts</h3>
+  <p>MoE models replace the feed-forward network with many experts and a router that picks a few per token. Qwen3-235B-A22B has 235B parameters but activates about 22B per token, picking 8 of 128 experts in each of 94 layers. In a large production batch, nearly every expert is touched anyway, so MoE saves compute more than memory unless expert parallelism spreads the experts. MoE tends to appear above roughly 100B parameters, while small models stay dense.</p>
+  <div class="fig" id="f-moe">
+    <p class="fig-cap">Fig. E · Active versus total parameters · illustrative · choose experts per token</p>
+    <div id="moe-calc"></div>
+  </div>
+</section>
+
+<section class="sec" id="s23" data-nav="2.3 Image generation" data-chip="2.3">
+  <p class="kick">Section 2.3</p>
+  <h2 class="sec-h">Image generation inference mechanics</h2>
+  <p>An image pipeline chains a text encoder, a denoising model and a VAE that moves between pixels and a much smaller latent space. Extras such as LoRAs and ControlNets, often wired in with ComfyUI, adjust the result. Generation starts from noise and removes it over 30 to 50 steps, controlled by the prompt, a negative prompt, step count, guidance scale and image size.</p>
+  <p>Each step runs the denoiser twice, once with the prompt and once without, to apply guidance. So 50 steps means 100 forward passes. Compare that to a few-step model.</p>
+  <div class="fig" id="f-den">
+    <p class="fig-cap">Fig. B · Cost of denoising steps · illustrative · drag steps</p>
+    <div id="den-calc"></div>
+  </div>
+  <h3 class="sub-h">2.3.1 Architecture</h3>
+  <p>Modern denoisers are diffusion transformers that look at images as small patches. SDXL used a CLIP based encoder and a base plus refiner. Newer models such as Qwen Image use a 7B language model as the text encoder, a denoiser of about 20B parameters and dual VAE encoding. Research is now blending diffusion with autoregressive LLM architecture, which can output variable sizes and avoid dozens of forward passes.</p>
+  <h3 class="sub-h">2.3.2 and 2.3.3 Few-step models and video</h3>
+  <p>Few-step models, built by latent consistency or distillation, finish in eight steps or fewer and run 80 to 90 percent faster at some quality cost. Video models are like image models but bigger: three to five times the parameters and far more latent data. They keep the whole clip in a latent space with a time axis so frames attend to each other, instead of generating frame by frame, which compounds errors. They typically run at batch size one, using a whole eight GPU node for one request.</p>
+  <div class="fig" id="f-img">
+    <p class="fig-cap">Fig. C · Image versus video versus few-step · illustrative · choose a model type</p>
+    <div id="img-cmp"></div>
+  </div>
+</section>
+
+<section class="sec" id="s24" data-nav="2.4 Bottlenecks" data-chip="2.4">
+  <p class="kick">Section 2.4</p>
+  <h2 class="sec-h">Calculating inference bottlenecks</h2>
+  <p>A GPU has two key resources: compute in operations per second and memory bandwidth in bytes per second. A bottleneck is an imbalance where one sits idle while the other is saturated, so optimizing the idle one achieves nothing.</p>
+  <h3 class="sub-h">2.4.1 Ops:byte and arithmetic intensity</h3>
+  <p>Divide compute by bandwidth to get the hardware ops:byte ratio. An H100 does about 989 teraFLOPS in FP16 against 3.35 TB/s, a ratio near 295. An algorithm's arithmetic intensity is its operations divided by bytes moved. Below the hardware ratio it is memory bound, above it compute bound, which is what a roofline chart shows.</p>
+  <div class="fig" id="f-roof">
+    <p class="fig-cap">Fig. B · Roofline for an H100 in FP16 · illustrative · move the intensity</p>
+    <div id="roof-calc"></div>
+  </div>
+  <h3 class="sub-h">2.4.2 LLM bottlenecks</h3>
+  <p>Prefill loads the weights once and does large matrix multiplications over the whole prompt, so intensity is high and it is compute bound. It sets time to first token. Decode loads the weights for every single token and does small vector-matrix work, so intensity is low and it is memory bound. It sets tokens per second. The book's worked example, standard attention with d=128 and N=4096 in FP16, comes out near 62, far below 295. Batching raises decode's useful work per byte moved.</p>
+  <h3 class="sub-h">2.4.3 Image bottlenecks</h3>
+  <p>Image and video models have about a tenth the parameters of frontier language models, but attention over the full latent is just as demanding, so like prefill they are compute bound.</p>
+  <div class="fig" id="f-bn">
+    <p class="fig-cap">Fig. C · Which resource limits what · synthesis · select a workload</p>
+    <div class="scroll"><svg id="bn" viewBox="0 0 720 150" role="group" aria-label="Prefill, decode, image generation and their bottlenecks"></svg></div>
+    <div class="read" id="bn-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+</section>
+
+<section class="sec" id="s25" data-nav="2.5 Optimizing attention" data-chip="2.5">
+  <p class="kick">Section 2.5</p>
+  <h2 class="sec-h">Optimizing attention</h2>
+  <p>Attention is among the most expensive parts of inference, and it is delicate because every token depends on every earlier one. There are two routes: better implementations, which are lossless, and new algorithms, which trade some quality for better scaling.</p>
+  <div class="fig" id="f-att">
+    <p class="fig-cap">Fig. B · Approaches to attention · select one</p>
+    <div id="att-tabs"></div>
+  </div>
+  <p>Sliding window attention only looks at the last w tokens, turning N squared into N times w. Training with the window keeps quality high. See how the saving grows with length.</p>
+  <div class="fig" id="f-win">
+    <p class="fig-cap">Fig. C · Full versus sliding window attention · illustrative · drag the lengths</p>
+    <div id="win-calc"></div>
+  </div>
+  <p>Another direction replaces attention. Mamba style state-space models update a recurrent state with linear scaling, and hybrid models mix such blocks with transformer blocks, as in NVIDIA Nemotron 3 Nano.</p>
+</section>
+
+<section class="sec" id="map" data-nav="Chapter map" data-chip="Map">
+  <p class="kick">Summary</p>
+  <h2 class="sec-h">Chapter map</h2>
+  <p>The whole chapter on one page. Each branch is a section, and each leaf is the idea to remember from it.</p>
+  <div class="fig" id="f-map">
+    <p class="fig-cap">Fig. M · Chapter 2 at a glance · synthesis</p>
+    <div class="scroll"><svg id="map-svg" viewBox="0 0 720 620" role="img" aria-label="Mind map of chapter 2."></svg></div>
+  </div>
+</section>
+
+<section class="sec" id="recall" data-nav="Recall check" data-chip="Recall">
+  <p class="kick">Retention</p>
+  <h2 class="sec-h">Recall check</h2>
+  <p>Answer in your head first, then select the card. Coming back to these in a week works better than rereading the chapter.</p>
+  <div class="fcs" id="fcs"></div>
+</section>
+
+</main>
+</div>
+<footer id="notes-foot"></footer>
+<script src="/notes/assets/library.js"></script>
+<script src="/notes/assets/notes.js"></script>
+<script src="/notes/inference-engineering/ch2/figures.js"></script>
+</body>
+</html>

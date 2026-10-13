@@ -234,3 +234,38 @@ footer p{max-width:78ch}
 .pager a{color:var(--acc-ink);text-decoration:none}
 .pager a:hover{text-decoration:underline}
 
+
+
+/* motion */
+.progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:40;pointer-events:none}
+.progress i{display:block;height:100%;background:var(--acc);transform-origin:0 0;transform:scaleX(0)}
+@keyframes dash{to{stroke-dashoffset:-10}}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes underline{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.flow{stroke-dasharray:5 5}
+.req.w{fill:var(--warn)}
+.sec-h{position:relative;padding-bottom:16px}
+.sec-h::after{content:"";position:absolute;left:0;bottom:0;width:84px;height:1px;background:var(--acc);transform-origin:0 0}
+.tabpanel{border:1px solid var(--line);background:var(--bg);padding:16px 18px;min-height:6em}
+.tabpanel.in{animation:fadein .3s ease-out both}
+.tabpanel h4{margin:0 0 6px;font:500 12px var(--fm);letter-spacing:.07em;text-transform:uppercase;color:var(--acc-ink)}
+.tabpanel p{margin:0 0 .6em;font-size:15.5px;line-height:1.6;max-width:none}
+.tabpanel ul{margin:0 0 .4em;padding-left:1.1em;font-size:15.5px;line-height:1.6}
+.card:hover,.fc:hover{border-color:var(--acc)}
+.card{transition:border-color .2s}
+@media (prefers-reduced-motion:no-preference){
+  .flow{animation:dash 1s linear infinite}
+  main>section:first-child>*{animation:enter .9s cubic-bezier(.2,.7,.2,1) both}
+  main>section:first-child>*:nth-child(2){animation-delay:.07s}
+  main>section:first-child>*:nth-child(3){animation-delay:.14s}
+  main>section:first-child>*:nth-child(4){animation-delay:.21s}
+  main>section:first-child>*:nth-child(5){animation-delay:.28s}
+}
+@supports (animation-timeline:view()){
+  @media screen and (prefers-reduced-motion:no-preference){
+    .card,.fc,.stat,.toc li,.sub-h,.summary li,.twocol>*{animation:rise linear both;animation-timeline:view();animation-range:entry 0% entry 60%}
+    .sec-h::after{animation:underline linear both;animation-timeline:view();animation-range:entry 20% entry 90%}
+  }
+}

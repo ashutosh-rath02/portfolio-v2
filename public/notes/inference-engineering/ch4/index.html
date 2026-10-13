@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Software | Inference Engineering notes</title>
+<meta name="description" content="Animated visual notes for chapter 4 of Inference Engineering by Philip Kiely: CUDA, frameworks, inference engines, Dynamo and benchmarking.">
+<meta property="og:title" content="Software | Inference Engineering notes">
+<meta property="og:description" content="Animated visual notes for chapter 4 of Inference Engineering by Philip Kiely.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.ashutoshrath.me/notes/inference-engineering/ch4">
+<link rel="canonical" href="https://www.ashutoshrath.me/notes/inference-engineering/ch4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/notes/assets/notes.css">
+<script>try{var t=localStorage.getItem('notes-theme');if(t!=='light'&&t!=='dark'){t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark')t=''}if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-page="chapter" data-book="inference-engineering" data-chapter="4">
+<header id="notes-top"></header>
+<div class="shell">
+<aside class="rail" id="notes-rail" aria-label="Contents"></aside>
+<main>
+
+<section class="sec" id="overview" data-nav="Overview" data-chip="Overview" style="padding-top:56px">
+  <p class="eyebrow">Chapter 4 · Philip Kiely, Inference Engineering</p>
+  <h1 class="display">Software</h1>
+  <p class="lede">Between the GPU and your users sits a stack of software. Most inference work happens near the top, configuring engines and orchestrating GPUs, but a good mental model of each layer below tells you where a problem really lives.</p>
+  <div class="fig" id="f-stack">
+    <p class="fig-cap">Fig. A · The software stack · synthesis · select a layer</p>
+    <div class="scroll"><svg id="stack" viewBox="0 0 720 420" role="group" aria-label="Layers from GPU hardware up to Dynamo"></svg></div>
+    <div class="read" id="stack-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+
+  <ol class="summary" aria-label="The chapter in parts">
+    <li><a href="#s41">4.1</a><span>CUDA kernels do the work. Most engineers select kernels and rely on fusion instead of writing them.</span></li>
+    <li><a href="#s42">4.2</a><span>PyTorch is the standard framework, safetensors is the weight format, and compilation targets a GPU.</span></li>
+    <li><a href="#s43">4.3</a><span>Choose between vLLM, SGLang and TensorRT-LLM on a deployment by deployment basis.</span></li>
+    <li><a href="#s44">4.4</a><span>Dynamo orchestrates engines at scale with KV aware routing and disaggregation.</span></li>
+    <li><a href="#s45">4.5</a><span>Benchmark with realistic traffic, change one thing at a time, and profile to learn why.</span></li>
+  </ol>
+</section>
+
+<section class="sec" id="s41" data-nav="4.1 CUDA" data-chip="4.1">
+  <p class="kick">Section 4.1</p>
+  <h2 class="sec-h">CUDA</h2>
+  <p>CUDA is NVIDIA's platform and programming model for running parallel work on its GPUs. It is not a language: you write C++, and a compiler such as nvcc produces separate CPU and GPU code. Its parts are the kernel (a function that runs in parallel on the GPU), the graph (a DAG of kernels for repeated workflows), the driver and the runtime API. A kernel can replace thousands of sequential loop iterations with thousands of parallel threads.</p>
+  <h3 class="sub-h">4.1.1 Kernels for inference</h3>
+  <p>You rarely start from nothing. Libraries supply the building blocks.</p>
+  <div class="fig" id="f-kern">
+    <p class="fig-cap">Fig. B · Where kernels come from · select a library</p>
+    <div id="kern-tabs"></div>
+  </div>
+  <h3 class="sub-h">4.1.2 Kernel selection</h3>
+  <p>Kernels are tied to hardware details, such as bandwidth or Tensor Core layout, so a kernel tuned for an H100 may not suit a B200 and the reverse may not run on Hopper at all. Most selection is automatic in PyTorch and TensorRT-LLM, but engineers sometimes choose by hand. DeepSeek released DeepGEMM, FP8 matrix multiply kernels for Hopper, and you can plug them in as a plugin. Check compatibility before changing GPUs.</p>
+  <h3 class="sub-h">4.1.3 Kernel fusion</h3>
+  <p>Running two kernels back to back writes the first result to memory and reads it straight back. Fusing them into one kernel skips that round trip, which matters most in bandwidth bound decode. Compilers find simple fusions, while complex ones like FlashAttention are handwritten and loaded as plugins. A common pattern is fusing a matrix multiply, bias add and activation.</p>
+  <div class="fig" id="f-fuse">
+    <p class="fig-cap">Fig. C · Kernel fusion · using the book's multiply by 2 then 3 example · choose a version</p>
+    <div id="fuse-cmp"></div>
+  </div>
+</section>
+
+<section class="sec" id="s42" data-nav="4.2 Frameworks" data-chip="4.2">
+  <p class="kick">Section 4.2</p>
+  <h2 class="sec-h">Deep learning frameworks and libraries</h2>
+  <p>Frameworks bridge raw CUDA and ready-made engines. PyTorch has become the clear leader. TensorFlow was prominent in the 2010s but has faded, and JAX is a simpler research project with sharp edges.</p>
+  <div class="fig" id="f-fw">
+    <p class="fig-cap">Fig. B · The framework layer · select a topic</p>
+    <div id="fw-tabs"></div>
+  </div>
+  <p>The industry is splitting between the control of handwritten PyTorch and the convenience of prebuilt engines. For supported models it is increasingly common to skip the intermediate representation and export safetensors weights straight to vLLM or TensorRT-LLM.</p>
+</section>
+
+<section class="sec" id="s43" data-nav="4.3 Inference engines" data-chip="4.3">
+  <p class="kick">Section 4.3</p>
+  <h2 class="sec-h">Inference engines</h2>
+  <p>Three engines are competitive: vLLM, SGLang and TensorRT-LLM. They give strong out-of-the-box performance for LLMs and similar architectures, ship continuous batching, and support the main techniques (quantization, speculation, prefix caching, parallelism, disaggregation). vLLM and SGLang are general and easy with day-zero model support, while TensorRT-LLM is harder but usually fastest. The author uses all three, most often TensorRT-LLM.</p>
+  <div class="fig" id="f-eng">
+    <p class="fig-cap">Fig. B · Engine comparison · qualitative, from the book's table · select an engine</p>
+    <div id="eng-cmp"></div>
+  </div>
+  <div class="fig" id="f-use">
+    <p class="fig-cap">Fig. C · When to use each · select an engine</p>
+    <div id="use-tabs"></div>
+  </div>
+</section>
+
+<section class="sec" id="s44" data-nav="4.4 NVIDIA Dynamo" data-chip="4.4">
+  <p class="kick">Section 4.4</p>
+  <h2 class="sec-h">NVIDIA Dynamo</h2>
+  <p>Dynamo, announced in March 2025, is a distributed serving layer that uses vLLM, SGLang or TensorRT-LLM as backends. It provides KV cache re-use with prefix aware routing, disaggregation of prefill and decode with independent scaling, and multi-node parallelism, often with expert parallelism. A planner can scale prefill and decode workers to meet TTFT and TPS targets.</p>
+  <div class="fig" id="f-dyn">
+    <p class="fig-cap">Fig. B · A Dynamo deployment · synthesis · select a part or press play</p>
+    <div class="scroll"><svg id="dyn" viewBox="0 0 720 300" role="group" aria-label="Request, KV aware router, prefill workers, decode workers and planner"></svg></div>
+    <div class="row" style="margin-top:12px"><button class="btn" type="button" id="dyn-play">Follow a request</button></div>
+    <div class="read" id="dyn-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <p>More scale unlocks more techniques. Dynamo suits big models and heavy traffic such as trillion parameter models with many concurrent users. Without enough volume for disaggregation and KV aware routing to matter, it is extra complexity and overhead, and an engine alone is enough.</p>
+</section>
+
+<section class="sec" id="s45" data-nav="4.5 Benchmarking" data-chip="4.5">
+  <p class="kick">Section 4.5</p>
+  <h2 class="sec-h">Performance benchmarking and load testing</h2>
+  <p>Without precise benchmarks you cannot tell whether an optimization worked. The best benchmark shadows real production traffic, copying requests to the test system without affecting the originals. Otherwise simulate traffic across several dimensions.</p>
+  <div class="fig" id="f-dim">
+    <p class="fig-cap">Fig. B · What a realistic benchmark matches · select a dimension</p>
+    <div id="dim-tabs"></div>
+  </div>
+  <h3 class="sub-h">4.5.1 and 4.5.2 Tooling and tips</h3>
+  <p>Common tools are SGLang Genai-bench, NVIDIA GenAI-Perf and the general purpose load tester Locust. Open evals such as MMLU, gsm8k, SWE-bench or HumanEval double as realistic inputs and as a spot check that quality did not drop. Start from a baseline, keep the configuration constant, run several times, change one variable at a time, and test each optimization alone and together, since some conflict, such as speculation at large batch sizes.</p>
+  <div class="fig" id="f-loop">
+    <p class="fig-cap">Fig. C · The optimization loop · synthesis · select a step</p>
+    <div class="scroll"><svg id="loop" viewBox="0 0 720 150" role="group" aria-label="Baseline, change one thing, benchmark, deploy, with a loop back"></svg></div>
+    <div class="read" id="loop-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <h3 class="sub-h">4.5.3 Profiling</h3>
+  <p>A benchmark gives a figure such as P90 TTFT of 350 ms. A profiler shows where each millisecond went. Benchmarking says how the system performs, profiling says why. Most engineers who configure TensorRT-LLM never profile, but contributors to engines, authors of custom PyTorch services and people working on video generation should. Tools are PyTorch Profiler, NVIDIA Nsight Systems for system wide traces and Nsight Compute for single kernels.</p>
+</section>
+
+<section class="sec" id="map" data-nav="Chapter map" data-chip="Map">
+  <p class="kick">Summary</p>
+  <h2 class="sec-h">Chapter map</h2>
+  <p>The whole chapter on one page. Each branch is a section, and each leaf is the idea to remember from it.</p>
+  <div class="fig" id="f-map">
+    <p class="fig-cap">Fig. M · Chapter 4 at a glance · synthesis</p>
+    <div class="scroll"><svg id="map-svg" viewBox="0 0 720 520" role="img" aria-label="Mind map of chapter 4."></svg></div>
+  </div>
+</section>
+
+<section class="sec" id="recall" data-nav="Recall check" data-chip="Recall">
+  <p class="kick">Retention</p>
+  <h2 class="sec-h">Recall check</h2>
+  <p>Answer in your head first, then select the card. Coming back to these in a week works better than rereading the chapter.</p>
+  <div class="fcs" id="fcs"></div>
+</section>
+
+</main>
+</div>
+<footer id="notes-foot"></footer>
+<script src="/notes/assets/library.js"></script>
+<script src="/notes/assets/notes.js"></script>
+<script src="/notes/inference-engineering/ch4/figures.js"></script>
+</body>
+</html>

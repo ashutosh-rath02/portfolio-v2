@@ -92,6 +92,15 @@ SVG classes: `.ln` (stroke), `.ln.soft`, `.ln.thin`, `.ln.a`, `.ln.w`, `.ln.dash
 
 Motion classes: `.draw` plus `pathLength="1"` on a path draws it on scroll, with `style="--s:8%"` to stagger. `.lift` makes an element rise toward the pointer. Both respect reduced motion and the Lift slider.
 
+Motion that applies automatically, with no markup needed:
+
+- A thin reading progress bar at the top of the page (`initProgress`).
+- Cards, flashcards, stat tiles, summary items and two column blocks fade and rise as they scroll in, using CSS scroll-driven animation. A short entrance plays on the first section. Section titles draw an underline.
+- `.flow` paths animate dashes along connectors, and `Notes.flow` can add dots that travel along each edge.
+- Bars fill when they scroll into view (`Notes.barchart`), and `[data-count]` numbers count up (`initCounts`).
+
+All of it sits inside `@supports (animation-timeline: view())` and `prefers-reduced-motion: no-preference`, so unsupported browsers and print show the finished page.
+
 ## Figure rules
 
 - SVG `viewBox` is 720 wide. Wide figures sit in `.scroll`, which gives them `min-width: 640px` and scrolls sideways on phones. Use class `fit` on the `svg` and enlarge its text in a `max-width: 640px` rule only when the figure must fit a phone (see the triangle).
@@ -111,13 +120,19 @@ Register a figure with `Notes.figure(name, fn)`. A failing figure logs to the co
 | `Notes.radial(svg, {items, read, list, center})` | radial question map with a readout and a phone list |
 | `Notes.mindmap(svg, tree, rootLabel)` | left to right mind map from `[[branch, [leaf, ...]], ...]` |
 | `Notes.flashcards(el, cards)` | question and answer cards from `[[q, a], ...]` |
+| `Notes.flow(svg, spec)` | grid laid out flowchart: `{cols, nodes:[{id,t,s,c,r,w,kind,info}], edges:[{a,b,label,kind,loop}], read, play, playBtn, particles, start}`. Nodes are focusable and fill the readout. `play` is a list of node ids stepped once a second |
+| `Notes.calc(el, spec)` | sliders or option buttons that drive computed outputs: `{inputs:[{k,label,min,max,step,value,fmt}|{k,label,opts:[{l,v}],value}], outputs:[{label,fn,fmt,sub}], bars:[{label,fn,max,kind,fmt}], read(v,out)->[heading,text,warn]}` |
+| `Notes.compare(el, spec)` | option buttons that animate metric bars and a readout: `{metrics:[{label,kind}], options:[{label,vals:[0..1],text,h,p}], initial}` |
+| `Notes.barchart(el, spec)` | bar rows that fill on scroll: `{rows:[{label,value,text,kind,info}], max, read}` |
+| `Notes.tabs(el, items)` | tabbed explanations from `[{label, html}]` where the html is authored in the figure file |
+| `Notes.fmt` | `n(value, decimals)` and `pct(value)` formatters |
 | `Notes.se`, `Notes.sp`, `Notes.clamp`, `Notes.setPressed` | SVG element, pointer to SVG point, clamp, toggle group state |
 
 ## Adding a chapter
 
 1. In `library.js`, set the chapter `status` to `'live'` and add `pages`.
 2. Create `public/notes/<slug>/ch<n>/index.html` from chapter 1, change the `<title>`, description, canonical and `data-chapter`.
-3. Write the sections. Keep the sequence: overview and hero figure, the chapter's sections with one operable figure each, a chapter map (`Notes.mindmap`), recall cards (`Notes.flashcards`).
+3. Write the sections. Keep the sequence: overview and hero figure, the chapter's sections with one operable figure each, a chapter map (`Notes.mindmap`), recall cards (`Notes.flashcards`). Prefer the data driven builders (`flow`, `calc`, `compare`, `barchart`, `tabs`) over hand drawn SVG, and let a figure compute from numbers the book gives.
 4. Put figure code in `figures.js` using `Notes.figure`.
 5. Add the URL to `src/app/sitemap.ts`.
 6. Check desktop and phone widths in light and dark, and confirm there are no console errors and no horizontal page scroll.

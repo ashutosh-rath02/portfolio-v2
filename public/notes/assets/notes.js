@@ -337,6 +337,255 @@
     });
   }
 
+
+  /* ---------- data driven builders ---------- */
+
+  var uid = 0;
+  var fmt = {
+    n: function (v, d) { return Number(v).toLocaleString('en-US', { maximumFractionDigits: d || 0, minimumFractionDigits: d || 0 }); },
+    pct: function (v) { return Math.round(v * 100) + '%'; }
+  };
+
+  /* Flowchart on a grid with animated flow and a readout.
+     spec: {cols, nodes:[{id,t,s,c,r,w,kind,info}], edges:[{a,b,label,kind,loop}],
+            read:'#id', play:[ids], playBtn:'#id', particles:true, rowH, nodeH}
+     kind on a node: 'acc' or 'warn'. kind on an edge: 'a' or 'w'. */
+  function flow(svg, spec) {
+    var id = 'ah' + (++uid), W = 720, cols = spec.cols || 3, colW = W / cols;
+    var nh = spec.nodeH || 54, rh = spec.rowH || 92, y0 = 24, rows = 0, map = {};
+    spec.nodes.forEach(function (n) {
+      n.w = n.w || Math.min(colW - 40, 200);
+      n.cx = (n.c + .5) * colW; n.cy = y0 + nh / 2 + n.r * rh;
+      rows = Math.max(rows, n.r + 1); map[n.id] = n;
+    });
+    var extra = spec.extra || 0;
+    svg.setAttribute('viewBox', '0 0 720 ' + (y0 * 2 + nh + (rows - 1) * rh + extra));
+    var defs = se('defs', {}, svg);
+    var mk = se('marker', { id: id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, defs);
+    se('path', { d: 'M2 1L8 5L2 9', fill: 'none', stroke: 'context-stroke', 'stroke-width': 1.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, mk);
+    var ge = se('g', {}, svg), gp = se('g', {}, svg), gn = se('g', {}, svg);
+    spec.edges.forEach(function (e, i) {
+      var a = map[e.a], b = map[e.b], hh = nh / 2, d, lx, ly, anchor = 'middle';
+      if (e.loop) {
+        var x = Math.max(a.cx + a.w / 2, b.cx + b.w / 2) + (e.gap || 24);
+        d = 'M' + (a.cx + a.w / 2) + ' ' + a.cy + ' H' + x + ' V' + b.cy + ' H' + (b.cx + b.w / 2 + 3);
+        lx = x + 6; ly = (a.cy + b.cy) / 2; anchor = 'start';
+      } else if (Math.abs(a.cy - b.cy) < 1) {
+        var dir = b.cx > a.cx ? 1 : -1;
+        d = 'M' + (a.cx + dir * a.w / 2) + ' ' + a.cy + ' H' + (b.cx - dir * (b.w / 2 + 3));
+        lx = (a.cx + b.cx) / 2; ly = a.cy - 8;
+      } else if (Math.abs(a.cx - b.cx) < 1) {
+        var dv = b.cy > a.cy ? 1 : -1;
+        d = 'M' + a.cx + ' ' + (a.cy + dv * hh) + ' V' + (b.cy - dv * (hh + 3));
+        lx = a.cx + 8; ly = (a.cy + b.cy) / 2 + 4; anchor = 'start';
+      } else {
+        var dy = b.cy > a.cy ? 1 : -1, sy = a.cy + dy * hh, ey = b.cy - dy * (hh + 3), my = (sy + ey) / 2;
+        d = 'M' + a.cx + ' ' + sy + ' V' + my + ' H' + b.cx + ' V' + ey;
+        lx = (a.cx + b.cx) / 2; ly = my - 6;
+      }
+      se('path', { 'class': 'ln flow' + (e.kind ? ' ' + e.kind : ''), d: d, 'marker-end': 'url(#' + id + ')' }, ge);
+      if (e.label) se('text', { 'class': 'tm' + (e.kind === 'w' ? ' tw' : e.kind === 'a' ? ' ta' : ''), x: lx, y: ly, 'text-anchor': anchor }, ge).textContent = e.label;
+      if (spec.particles && !reduce) {
+        var c = se('circle', { r: 3, 'class': 'req' + (e.kind === 'w' ? ' w' : '') }, gp);
+        var am = se('animateMotion', { dur: (2.6 + (i % 3) * .5) + 's', repeatCount: 'indefinite', path: d, begin: (i * .35) + 's' }, c);
+      }
+    });
+    var els = {}, read = spec.read ? $(spec.read) : null;
+    function show(nid) {
+      for (var k in els) els[k].classList.toggle('on', k === nid);
+      if (read && map[nid]) { $('h4', read).textContent = map[nid].t; $('p', read).textContent = map[nid].info || map[nid].s || ''; }
+    }
+    spec.nodes.forEach(function (n) {
+      var g = se('g', { 'class': 'node lift' + (n.kind ? ' ' + n.kind : ''), tabindex: 0, role: 'button', 'aria-label': n.t }, gn);
+      se('rect', { x: n.cx - n.w / 2, y: n.cy - nh / 2, width: n.w, height: nh, rx: 2 }, g);
+      se('text', { 'class': 'tb', x: n.cx, y: n.s ? n.cy - 6 : n.cy + 5, 'text-anchor': 'middle' }, g).textContent = n.t;
+      if (n.s) se('text', { 'class': 'ts', x: n.cx, y: n.cy + 13, 'text-anchor': 'middle' }, g).textContent = n.s;
+      els[n.id] = g;
+      g.addEventListener('mouseenter', function () { show(n.id); });
+      g.addEventListener('focus', function () { show(n.id); });
+      g.addEventListener('click', function () { show(n.id); });
+      g.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); show(n.id); } });
+    });
+    if (spec.play && spec.playBtn) {
+      var btn = $(spec.playBtn), timer = 0;
+      btn.addEventListener('click', function () {
+        clearInterval(timer); var i = 0; show(spec.play[0]);
+        timer = setInterval(function () { i++; if (i >= spec.play.length) { clearInterval(timer); return; } show(spec.play[i]); }, 1000);
+      });
+    }
+    show(spec.start || spec.nodes[0].id);
+    return { show: show };
+  }
+
+  /* Sliders (or option buttons) that drive computed outputs.
+     spec: {inputs:[{k,label,min,max,step,value,fmt} | {k,label,opts:[{l,v}],value}],
+            outputs:[{label,fn(v),fmt,sub}], bars:[{label,fn(v),max,kind,fmt}],
+            read:function(v,o)->[heading,text,warn?]} */
+  function calc(el, spec) {
+    var vals = {}, inEls = {};
+    var ctl = document.createElement('div'); ctl.className = 'ctl';
+    spec.inputs.forEach(function (inp) {
+      var wrap = document.createElement('div'); vals[inp.k] = inp.value;
+      if (inp.opts) {
+        var lab = document.createElement('label'); lab.innerHTML = '<span>' + esc(inp.label) + '</span>';
+        var row = document.createElement('div'); row.className = 'row'; row.style.marginTop = '6px';
+        var bs = inp.opts.map(function (o) {
+          var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = o.l;
+          b.setAttribute('aria-pressed', o.v === inp.value ? 'true' : 'false');
+          b.addEventListener('click', function () { vals[inp.k] = o.v; setPressed(bs, b); upd(); });
+          row.appendChild(b); return b;
+        });
+        wrap.appendChild(lab); wrap.appendChild(row);
+      } else {
+        var id = 'c' + (++uid), f = inp.fmt || fmt.n;
+        wrap.innerHTML = '<label for="' + id + '"><span>' + esc(inp.label) + '</span><output></output></label><input id="' + id + '" type="range" min="' + inp.min + '" max="' + inp.max + '" step="' + (inp.step || 1) + '" value="' + inp.value + '">';
+        var r = $('input', wrap), o = $('output', wrap);
+        o.textContent = f(inp.value);
+        r.addEventListener('input', function () { vals[inp.k] = +r.value; o.textContent = f(+r.value); upd(); });
+      }
+      ctl.appendChild(wrap);
+    });
+    el.appendChild(ctl);
+    var barsEl = null, barRows = [];
+    if (spec.bars) {
+      barsEl = document.createElement('div'); barsEl.className = 'bars';
+      spec.bars.forEach(function (b) {
+        var r = document.createElement('div'); r.className = 'bar sm';
+        r.innerHTML = '<span>' + esc(b.label) + '</span><span class="bar-t"><i class="bar-fill' + (b.kind === 'w' ? ' w' : '') + '"></i></span><span class="bar-val"></span>';
+        barsEl.appendChild(r); barRows.push(r);
+      });
+      el.appendChild(barsEl);
+    }
+    var statsEl = null, statEls = [];
+    if (spec.outputs) {
+      statsEl = document.createElement('div'); statsEl.className = 'stats';
+      spec.outputs.forEach(function (o) {
+        var s = document.createElement('div'); s.className = 'stat';
+        s.innerHTML = '<small>' + esc(o.label) + '</small><b></b><span>' + esc(o.sub || '') + '</span>';
+        statsEl.appendChild(s); statEls.push(s);
+      });
+      el.appendChild(statsEl);
+    }
+    var read = null;
+    if (spec.read) {
+      read = document.createElement('div'); read.className = 'read'; read.setAttribute('aria-live', 'polite');
+      read.innerHTML = '<h4></h4><p></p>'; el.appendChild(read);
+    }
+    function upd() {
+      var out = [];
+      if (spec.outputs) spec.outputs.forEach(function (o, i) {
+        var v = o.fn(vals); out.push(v); $('b', statEls[i]).textContent = (o.fmt || fmt.n)(v);
+      });
+      if (spec.bars) spec.bars.forEach(function (b, i) {
+        var v = b.fn(vals); $('.bar-fill', barRows[i]).style.width = clamp(v / b.max * 100, 0, 100) + '%';
+        $('.bar-val', barRows[i]).textContent = (b.fmt || fmt.n)(v);
+      });
+      if (read) {
+        var r = spec.read(vals, out);
+        $('h4', read).textContent = r[0]; $('p', read).textContent = r[1]; read.classList.toggle('warn', !!r[2]);
+      }
+    }
+    upd();
+    return { update: upd, values: vals };
+  }
+
+  /* Option toggle with animated metric bars and a readout.
+     spec: {metrics:[{label,kind}], options:[{label,vals:[0..1],text:[...],h,p}], initial:0} */
+  function compare(el, spec) {
+    var row = document.createElement('div'); row.className = 'row'; row.style.marginBottom = '12px';
+    var bars = document.createElement('div'); bars.className = 'bars';
+    var rows = spec.metrics.map(function (m) {
+      var r = document.createElement('div'); r.className = 'bar sm';
+      r.innerHTML = '<span>' + esc(m.label) + '</span><span class="bar-t"><i class="bar-fill' + (m.kind === 'w' ? ' w' : '') + '"></i></span><span class="bar-val"></span>';
+      bars.appendChild(r); return r;
+    });
+    var read = document.createElement('div'); read.className = 'read'; read.setAttribute('aria-live', 'polite'); read.innerHTML = '<h4></h4><p></p>';
+    var btns = spec.options.map(function (o, i) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = o.label;
+      b.addEventListener('click', function () { show(i); }); row.appendChild(b); return b;
+    });
+    function show(i) {
+      var o = spec.options[i]; setPressed(btns, btns[i]);
+      rows.forEach(function (r, j) { $('.bar-fill', r).style.width = (o.vals[j] * 100) + '%'; $('.bar-val', r).textContent = o.text ? o.text[j] : fmt.pct(o.vals[j]); });
+      $('h4', read).textContent = o.h || o.label; $('p', read).textContent = o.p || '';
+    }
+    el.appendChild(row); el.appendChild(bars); el.appendChild(read);
+    show(spec.initial || 0);
+    return { show: show };
+  }
+
+  /* Horizontal bar chart that fills when scrolled into view.
+     spec: {rows:[{label,value,text,kind,info}], max, read:'#id'} */
+  function barchart(el, spec) {
+    var max = spec.max || Math.max.apply(null, spec.rows.map(function (r) { return r.value; }));
+    var box = document.createElement('div'); box.className = 'bars';
+    var read = spec.read ? $(spec.read) : null;
+    var rows = spec.rows.map(function (r) {
+      var d = document.createElement('div'); d.className = 'bar sm'; if (read) { d.tabIndex = 0; d.style.cursor = 'default'; }
+      d.innerHTML = '<span>' + esc(r.label) + '</span><span class="bar-t"><i class="bar-fill' + (r.kind === 'w' ? ' w' : '') + '"></i></span><span class="bar-val">' + esc(r.text || r.value) + '</span>';
+      function show() { if (read && r.info) { $('h4', read).textContent = r.label; $('p', read).textContent = r.info; } }
+      d.addEventListener('mouseenter', show); d.addEventListener('focus', show);
+      box.appendChild(d); return d;
+    });
+    el.appendChild(box);
+    function fill() { rows.forEach(function (d, i) { $('.bar-fill', d).style.width = (spec.rows[i].value / max * 100) + '%'; }); }
+    if (!('IntersectionObserver' in window) || reduce) fill();
+    else {
+      rows.forEach(function (d) { $('.bar-fill', d).style.width = '0%'; });
+      var io = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { fill(); io.disconnect(); } }, { threshold: .2 });
+      io.observe(box);
+    }
+  }
+
+  /* Tabbed explanations. items: [{label, html}] (html is trusted, authored in the page). */
+  function tabs(el, items) {
+    var row = document.createElement('div'); row.className = 'row'; row.style.marginBottom = '14px';
+    var panel = document.createElement('div'); panel.className = 'tabpanel'; panel.setAttribute('aria-live', 'polite');
+    var btns = items.map(function (it, i) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = it.label;
+      b.addEventListener('click', function () { show(i); }); row.appendChild(b); return b;
+    });
+    function show(i) {
+      setPressed(btns, btns[i]);
+      panel.innerHTML = items[i].html;
+      panel.classList.remove('in'); void panel.offsetWidth; panel.classList.add('in');
+    }
+    el.appendChild(row); el.appendChild(panel); show(0);
+  }
+
+  /* Count numbers up when they scroll into view. Markup: <b data-count="1600">1,600</b> */
+  function initCounts() {
+    var els = $$('[data-count]');
+    if (!els.length || reduce || !('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        io.unobserve(e.target);
+        var el = e.target, to = +el.getAttribute('data-count'), final = el.textContent, t0 = performance.now();
+        (function step(now) {
+          var p = clamp((now - t0) / 900, 0, 1), v = to * (1 - Math.pow(1 - p, 3));
+          el.textContent = p < 1 ? Math.round(v).toLocaleString('en-US') : final;
+          if (p < 1) requestAnimationFrame(step);
+        })(t0);
+      });
+    }, { threshold: .6 });
+    els.forEach(function (e) { io.observe(e); });
+  }
+
+  /* Thin reading progress bar under the top edge. */
+  function initProgress() {
+    var bar = document.createElement('div'); bar.className = 'progress'; bar.innerHTML = '<i></i>';
+    document.body.appendChild(bar);
+    var i = bar.firstChild, ticking = false;
+    function upd() {
+      ticking = false;
+      var h = document.documentElement.scrollHeight - innerHeight;
+      i.style.transform = 'scaleX(' + (h > 0 ? clamp(scrollY / h, 0, 1) : 0) + ')';
+    }
+    addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(upd); } }, { passive: true });
+    upd();
+  }
+
   /* ---------- start ---------- */
 
   function start() {
@@ -349,6 +598,8 @@
     queue.forEach(function (f) { guard(f[0], f[1]); });
     guard('lift', initLift);
     guard('spy', initSpy);
+    guard('counts', initCounts);
+    guard('progress', initProgress);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
@@ -356,6 +607,7 @@
   window.Notes = {
     $: $, $$: $$, se: se, sp: sp, clamp: clamp, setPressed: setPressed, esc: esc,
     reduce: reduce, figure: figure, drag: drag, tween: tween,
-    radial: radial, mindmap: mindmap, flashcards: flashcards
+    radial: radial, mindmap: mindmap, flashcards: flashcards,
+    flow: flow, calc: calc, compare: compare, barchart: barchart, tabs: tabs, fmt: fmt
   };
 })();

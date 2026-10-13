@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Production | Inference Engineering notes</title>
+<meta name="description" content="Animated visual notes for chapter 7 of Inference Engineering by Philip Kiely: containers, autoscaling, multi-cloud, deployment and client code.">
+<meta property="og:title" content="Production | Inference Engineering notes">
+<meta property="og:description" content="Animated visual notes for chapter 7 of Inference Engineering by Philip Kiely.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.ashutoshrath.me/notes/inference-engineering/ch7">
+<link rel="canonical" href="https://www.ashutoshrath.me/notes/inference-engineering/ch7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/notes/assets/notes.css">
+<script>try{var t=localStorage.getItem('notes-theme');if(t!=='light'&&t!=='dark'){t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark')t=''}if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-page="chapter" data-book="inference-engineering" data-chapter="7">
+<header id="notes-top"></header>
+<div class="shell">
+<aside class="rail" id="notes-rail" aria-label="Contents"></aside>
+<main>
+
+<section class="sec" id="overview" data-nav="Overview" data-chip="Overview" style="padding-top:56px">
+  <p class="eyebrow">Chapter 7 · Philip Kiely, Inference Engineering</p>
+  <h1 class="display">Production</h1>
+  <p class="lede">A fast replica is not a product. With enough traffic any single instance is overwhelmed, and that is an infrastructure problem, not a CUDA problem. This chapter covers the pieces around the model: containers, autoscaling, capacity across clouds, safe deployment and the client.</p>
+  <div class="fig" id="f-path">
+    <p class="fig-cap">Fig. A · A request in production · synthesis · select a part or press play</p>
+    <div class="scroll"><svg id="path" viewBox="0 0 720 300" role="group" aria-label="Client, global load balancer, queue and router, replicas, autoscaler"></svg></div>
+    <div class="row" style="margin-top:12px"><button class="btn" type="button" id="path-play">Follow a request</button></div>
+    <div class="read" id="path-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+
+  <ol class="summary" aria-label="The chapter in parts">
+    <li><a href="#s71">7.1</a><span>Package a pinned, minimal known good build in a container.</span></li>
+    <li><a href="#s72">7.2</a><span>Scale replicas on traffic and utilization, and make cold starts fast.</span></li>
+    <li><a href="#s73">7.3</a><span>Pool capacity across clouds for capacity, redundancy, latency and compliance.</span></li>
+    <li><a href="#s74">7.4</a><span>Test, roll out with canaries, estimate real cost and watch the right signals.</span></li>
+    <li><a href="#s75">7.5</a><span>Client code adds latency too: reuse sessions, go async, stream over the right protocol.</span></li>
+  </ol>
+</section>
+
+<section class="sec" id="s71" data-nav="7.1 Containerization" data-chip="7.1">
+  <p class="kick">Section 7.1</p>
+  <h2 class="sec-h">Containerization</h2>
+  <p>A container packages an application with its dependencies so it runs the same everywhere. Containers share the host's Linux kernel, which keeps them light. The vocabulary: a container is the running environment, an image is the executable package, a Dockerfile is the recipe and a registry stores and distributes images. Docker Hub is to images what Hugging Face is to weights.</p>
+  <div class="fig" id="f-layers">
+    <p class="fig-cap">Fig. B · Layers of a container · synthesis · select a layer</p>
+    <div class="scroll"><svg id="layers" viewBox="0 0 720 300" role="group" aria-label="Base image, additional layers, container layer"></svg></div>
+    <div class="read" id="layers-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <p>vLLM and SGLang publish official base images, and starting from one is usually wiser than building from scratch.</p>
+  <h3 class="sub-h">7.1.1 Dependency management</h3>
+  <div class="fig" id="f-dep">
+    <p class="fig-cap">Fig. C · What goes in the image · select a topic</p>
+    <div id="dep-tabs"></div>
+  </div>
+  <h3 class="sub-h">7.1.2 NIMs</h3>
+  <p>NVIDIA Inference Microservices are prebuilt containers for popular open models. A multi-LLM NIM runs a family of models on a supported GPU architecture, while an LLM-specific NIM is tuned for one model on one GPU setup. Use one as a starting point, a reference or an out-of-the-box service, but for maximum control build from a less opinionated base image.</p>
+</section>
+
+<section class="sec" id="s72" data-nav="7.2 Autoscaling" data-chip="7.2">
+  <p class="kick">Section 7.2</p>
+  <h2 class="sec-h">Autoscaling</h2>
+  <p>The aim is enough resources to meet latency SLAs without paying for idle GPUs. Kubernetes runs replicas of the model container, each on its own instance. A control plane makes routing and scaling decisions and a worker plane runs the containers. Autoscaling adjusts the replica count, using utilization (memory or compute, a lagging signal) or traffic (requests in flight, which can be proactive). The two can disagree, because a few huge uncached prompts can use more GPU than many small cached ones, so use both.</p>
+  <p>Five settings define a traffic based system: minimum replicas, maximum replicas, the autoscaling window, the scale down delay, and the concurrency target. A longer scale down delay protects against spiky traffic but wastes money after a real drop. Try them.</p>
+  <div class="fig" id="f-auto">
+    <p class="fig-cap">Fig. B · Autoscaling decision · illustrative · move the traffic and settings</p>
+    <div id="auto-calc"></div>
+  </div>
+  <h3 class="sub-h">7.2.1 Concurrency and batch sizing</h3>
+  <p>Know how much concurrent traffic an instance handles. Static batching waits for a full batch, dynamic batching waits for full or a timeout, and continuous batching swaps requests in as slots free up. Engines use token level continuous batching, which minimizes latency. Larger batches raise throughput but worsen each user's latency, and the replica batch size should match the autoscaler's concurrency target. When every replica is full, add replicas, and when many run half-empty batches, scale down.</p>
+  <div class="fig" id="f-batch">
+    <p class="fig-cap">Fig. C · Three batching styles · qualitative · select one</p>
+    <div id="batch-cmp"></div>
+  </div>
+  <h3 class="sub-h">7.2.2 Cold starts</h3>
+  <p>A cold start is the time to bring up a new replica, and slow ones force over-provisioning. It has four parts: GPU procurement, image loading, model loading and engine startup. Smaller images and quantized weights load faster. Weights now dwarf images, so load them separately, from storage close to the GPU rather than a third party or distant bucket. TensorRT-LLM and compiled PyTorch spend minutes compiling, so cache built engines, which only run on the same GPU type, CUDA version and dependencies.</p>
+  <div class="fig" id="f-cold">
+    <p class="fig-cap">Fig. D · Cold start budget · illustrative · set each part</p>
+    <div id="cold-calc"></div>
+  </div>
+  <h3 class="sub-h">7.2.3 Routing, load balancing and queueing</h3>
+  <div class="fig" id="f-route">
+    <p class="fig-cap">Fig. E · Who decides what · select a component</p>
+    <div id="route-tabs"></div>
+  </div>
+  <h3 class="sub-h">7.2.4 Scale to zero</h3>
+  <p>The system can drop to zero replicas and come back on demand. That needs fast cold starts and robust queueing. It suits development, periodic agents and daily batch jobs. If you lean on it to keep a latency sensitive app cheap under light, unscheduled traffic, the product is probably not ready for dedicated infrastructure and should use pay-per-token APIs.</p>
+  <h3 class="sub-h">7.2.5 Independent component scaling</h3>
+  <p>Compound pipelines have steps with different hardware needs. A voice activity model needs a far smaller GPU than the transcription model, and the LLM after it may need a node. Scale each step on its own, but keep every model in the same cluster, because cross cluster hops add up.</p>
+  <div class="fig" id="f-hops">
+    <p class="fig-cap">Fig. F · Cost of cross-cluster hops · from the book's 10 ms versus 50 ms example · choose pipeline length</p>
+    <div id="hops-calc"></div>
+  </div>
+</section>
+
+<section class="sec" id="s73" data-nav="7.3 Multi-cloud capacity" data-chip="7.3">
+  <p class="kick">Section 7.3</p>
+  <h2 class="sec-h">Multi-cloud capacity management</h2>
+  <p>One cluster works up to a point. A global user base needs thousands of GPUs worldwide. Siloed pools in different clouds are easy to build but cannot be used fluidly. True multi-cloud needs a global bin packing layer that treats pools as interchangeable, with self-healing and global scheduling. It unlocks capacity, redundancy, latency and compliance. A control plane handles deployment and global scaling, and workload planes serve traffic and scale locally, so one plane failing leaves others unaffected.</p>
+  <h3 class="sub-h">7.3.1 GPU procurement</h3>
+  <p>Providers are hyperscalers (AWS, GCP), neoclouds (CoreWeave, Nebius) and resellers. Capacity is hard to get, especially the newest GPUs and big clusters, because the best supply goes to big customers on long reservations. Large scale inference blends sources: a reserved baseline, with on-demand and spot for peaks, spread across clusters near users.</p>
+  <div class="fig" id="f-buy">
+    <p class="fig-cap">Fig. B · Ways to buy GPUs · qualitative · select one</p>
+    <div id="buy-cmp"></div>
+  </div>
+  <h3 class="sub-h">7.3.2 Geo-aware load balancing</h3>
+  <p>A global balancer avoids queues while spare capacity exists elsewhere but does not send Singapore traffic to San Francisco. A rule of thumb is five milliseconds per time zone, so New York to San Francisco is about fifteen milliseconds one way.</p>
+  <div class="fig" id="f-geo">
+    <p class="fig-cap">Fig. C · Distance costs latency · rule of thumb of 5 ms per time zone · choose the zones crossed</p>
+    <div id="geo-calc"></div>
+  </div>
+  <h3 class="sub-h">7.3.3 Reliability</h3>
+  <p>GPUs fail often. The Llama 3 run on 16,000 GPUs for 54 days had 419 unexpected interruptions, mostly hardware, about one per 50,000 GPU-hours. One node of eight GPUs running a year is over 70,000 GPU-hours. Failures are node level: when one GPU fails others often follow, so note failures, cordon nodes and cycle pods. Cloud maintenance and outages matter too. Multi-cloud adds two postures: active-active, with several planes serving live traffic, and active-passive, with a hot standby.</p>
+  <div class="fig" id="f-fail">
+    <p class="fig-cap">Fig. D · Expected hardware failures · illustrative, using the book's 1 per 50,000 GPU-hours · set fleet and time</p>
+    <div id="fail-calc"></div>
+  </div>
+  <div class="fig" id="f-ha">
+    <p class="fig-cap">Fig. E · Availability postures · qualitative · select one</p>
+    <div id="ha-cmp"></div>
+  </div>
+  <h3 class="sub-h">7.3.4 Security and compliance</h3>
+  <div class="fig" id="f-sec">
+    <p class="fig-cap">Fig. F · Three areas of concern · select one</p>
+    <div id="sec-tabs"></div>
+  </div>
+  <p>Multi-cluster infrastructure also supports data residency: a cluster near Toronto and another near New York keep Canadian data in Canada and American data in the United States, with little latency cost.</p>
+</section>
+
+<section class="sec" id="s74" data-nav="7.4 Testing and deployment" data-chip="7.4">
+  <p class="kick">Section 7.4</p>
+  <h2 class="sec-h">Testing and deployment</h2>
+  <p>Besides replica level benchmarks, test the whole system. Manual tests send synthetic traffic, load tests send volume to check scaling, and shadow traffic copies live requests to a test deployment. Testing costs engineering time and GPUs, so for example start with a random sample of shadow traffic, then a short load test. Remember that usage follows daily and weekly cycles.</p>
+  <h3 class="sub-h">7.4.1 Zero-downtime deployment</h3>
+  <p>Blue-green deployment keeps two full environments and cuts all traffic over, but at scale that needs double the GPUs: 100 in blue means 100 more in green. A canary sends a small share of traffic to the new version, watches it, reverts on problems, and ramps up gradually. With autoscaling the old version scales down as traffic leaves, so cost barely rises. Make sure the new deployment has enough replicas during the ramp, or users see queued latency spikes.</p>
+  <div class="fig" id="f-canary">
+    <p class="fig-cap">Fig. B · Blue-green versus canary GPU needs · illustrative, 100 GPU service · move the canary share</p>
+    <div id="canary-calc"></div>
+  </div>
+  <h3 class="sub-h">7.4.2 Cost estimation</h3>
+  <p>Public API cost is linear: price per million tokens times tokens. Dedicated cost depends on batch size, traffic saturation and sequence lengths. It is easier to convert your token spend into a total and compare that with dedicated costs than to back out a per-token price. Use a horizon of at least a week, and add engineering time to get total cost of ownership.</p>
+  <div class="fig" id="f-cost">
+    <p class="fig-cap">Fig. C · API versus dedicated · illustrative, made-up prices · set your own numbers</p>
+    <div id="cost-calc"></div>
+  </div>
+  <h3 class="sub-h">7.4.3 Observability</h3>
+  <p>Monitor inference like any mission-critical service, and read the metrics together, because a latency spike could come from volume or from longer inputs. Add server and audit logs, and integrate with Grafana, Datadog, PagerDuty and Sentry instead of building a silo.</p>
+  <div class="fig" id="f-obs">
+    <p class="fig-cap">Fig. D · What to watch · select a group</p>
+    <div id="obs-tabs"></div>
+  </div>
+</section>
+
+<section class="sec" id="s75" data-nav="7.5 Client code" data-chip="7.5">
+  <p class="kick">Section 7.5</p>
+  <h2 class="sec-h">Client code</h2>
+  <p>The other side of every call is easy to overlook. The industry standard is the OpenAI SDK, and libraries such as LangChain, Vercel AI SDK, LiteLLM and LlamaIndex also act as clients. Any of them can add latency, and real-time apps may need protocols beyond HTTP.</p>
+  <h3 class="sub-h">7.5.1 Client latency overhead</h3>
+  <p>Setting up a session takes a few dozen milliseconds. With a 300 ms P95 target, a TLS handshake alone can eat at least ten percent of the budget before inference starts. Reuse sessions, which the OpenAI SDK does quietly, and do the same when you write a client for a nonstandard modality.</p>
+  <div class="fig" id="f-tls">
+    <p class="fig-cap">Fig. B · Handshake share of the latency budget · illustrative · move the handshake time</p>
+    <div id="tls-calc"></div>
+  </div>
+  <h3 class="sub-h">7.5.2 Asynchronous inference</h3>
+  <p>Throughput oriented work like bulk documents or corpus embedding should be fire and forget. Synchronous calls time out after a few minutes. Async jobs are acknowledged immediately and deliver the result to a webhook, with limits measured in hours, and strong queues make this robust.</p>
+  <h3 class="sub-h">7.5.3 Streaming and protocols</h3>
+  <p>Streaming makes applications feel instant. HTTP streaming is enough for text, but live voice and video need bi-directional streams. WebSockets suit unstructured real-time data like audio, and a server allows a configured number of connections before new ones wait for a slot or a new replica. gRPC streams structured data against a predefined schema, which removes parsing but adds a little validation overhead.</p>
+  <div class="fig" id="f-proto">
+    <p class="fig-cap">Fig. C · Protocols compared · qualitative · select one</p>
+    <div id="proto-cmp"></div>
+  </div>
+</section>
+
+<section class="sec" id="map" data-nav="Chapter map" data-chip="Map">
+  <p class="kick">Summary</p>
+  <h2 class="sec-h">Chapter map</h2>
+  <p>The whole chapter on one page. Each branch is a section, and each leaf is the idea to remember from it.</p>
+  <div class="fig" id="f-map">
+    <p class="fig-cap">Fig. M · Chapter 7 at a glance · synthesis</p>
+    <div class="scroll"><svg id="map-svg" viewBox="0 0 720 520" role="img" aria-label="Mind map of chapter 7."></svg></div>
+  </div>
+</section>
+
+<section class="sec" id="recall" data-nav="Recall check" data-chip="Recall">
+  <p class="kick">Retention</p>
+  <h2 class="sec-h">Recall check</h2>
+  <p>Answer in your head first, then select the card. Coming back to these in a week works better than rereading the chapter.</p>
+  <div class="fcs" id="fcs"></div>
+</section>
+
+</main>
+</div>
+<footer id="notes-foot"></footer>
+<script src="/notes/assets/library.js"></script>
+<script src="/notes/assets/notes.js"></script>
+<script src="/notes/inference-engineering/ch7/figures.js"></script>
+</body>
+</html>

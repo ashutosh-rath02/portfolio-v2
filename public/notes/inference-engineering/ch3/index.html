@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hardware | Inference Engineering notes</title>
+<meta name="description" content="Animated visual notes for chapter 3 of Inference Engineering by Philip Kiely: GPU architecture, generations, instances, other accelerators and local inference.">
+<meta property="og:title" content="Hardware | Inference Engineering notes">
+<meta property="og:description" content="Animated visual notes for chapter 3 of Inference Engineering by Philip Kiely.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.ashutoshrath.me/notes/inference-engineering/ch3">
+<link rel="canonical" href="https://www.ashutoshrath.me/notes/inference-engineering/ch3">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/notes/assets/notes.css">
+<script>try{var t=localStorage.getItem('notes-theme');if(t!=='light'&&t!=='dark'){t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark')t=''}if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-page="chapter" data-book="inference-engineering" data-chapter="3">
+<header id="notes-top"></header>
+<div class="shell">
+<aside class="rail" id="notes-rail" aria-label="Contents"></aside>
+<main>
+
+<section class="sec" id="overview" data-nav="Overview" data-chip="Overview" style="padding-top:56px">
+  <p class="eyebrow">Chapter 3 · Philip Kiely, Inference Engineering</p>
+  <h1 class="display">Hardware</h1>
+  <p class="lede">Inference engineers work a level above the silicon, but a clear mental model of the GPU decides every hardware choice. Two numbers matter most: how much compute the chip has and how fast it can move bytes.</p>
+  <div class="fig" id="f-gpu">
+    <p class="fig-cap">Fig. A · Inside a GPU · synthesis · select a part</p>
+    <div class="scroll"><svg id="gpu" viewBox="0 0 720 150" role="group" aria-label="Tensor cores, L1, L2, VRAM data path"></svg></div>
+    <div class="read" id="gpu-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+
+  <ol class="summary" aria-label="The chapter in parts">
+    <li><a href="#s31">3.1</a><span>Tensor Cores set compute, VRAM size limits the model, bandwidth limits decode.</span></li>
+    <li><a href="#s32">3.2</a><span>Pick among Lovelace, Hopper and Blackwell, with Rubin coming. Newer means lower precision and inference features.</span></li>
+    <li><a href="#s33">3.3</a><span>An instance bundles GPUs with everything else. Nodes hold eight GPUs linked by NVLink, and InfiniBand links nodes.</span></li>
+    <li><a href="#s34">3.4</a><span>Other chips bet on bandwidth, power efficiency or platform integration, and all fight the CUDA moat.</span></li>
+    <li><a href="#s35">3.5</a><span>Local inference removes latency and cost but is limited by hardware, heat, fragmentation and battery.</span></li>
+  </ol>
+</section>
+
+<section class="sec" id="s31" data-nav="3.1 GPU architecture" data-chip="3.1">
+  <p class="kick">Section 3.1</p>
+  <h2 class="sec-h">GPU architecture</h2>
+  <h3 class="sub-h">3.1.1 Compute</h3>
+  <p>A GPU is built from Streaming Multiprocessors, and each contains three kinds of compute: CUDA cores for scalars, Tensor Cores for vectors and matrices, and special function units for operations such as sin, cos and log. Inference compute is measured in Tensor Core FLOPS, because matrix multiply and accumulate is the foundation of inference. A GPU also runs tens or hundreds of thousands of threads at once.</p>
+  <p>Spec sheets show dense and sparse FLOPS. Sparse assumes 2:4 structured sparsity and is often double the dense figure, but inference is dense by default, so read the dense column. FLOPS roughly double each time precision halves, so compare chips at the same precision. Compute is the limit for prefill and for image and video generation.</p>
+  <h3 class="sub-h">3.1.2 Memory and caches</h3>
+  <p>VRAM is high bandwidth DRAM (HBM3, HBM3e or HBM4). On chip SRAM forms three cache levels: L0 for a Tensor Core, L1 shared per SM, and L2 shared across SMs. An H100 has 256 KB of L1 per SM and 50 MB of L2. VRAM size caps the model you can load, and you want the weights plus at least 50 percent headroom for the KV cache. VRAM bandwidth limits decode at low to medium batch sizes, which is why an H200 beats an H100 for tokens per second.</p>
+  <div class="fig" id="f-fit">
+    <p class="fig-cap">Fig. B · Will it fit, and how fast · illustrative rule of thumb · choose a model size and GPU</p>
+    <div id="fit-calc"></div>
+  </div>
+</section>
+
+<section class="sec" id="s32" data-nav="3.2 Generations" data-chip="3.2">
+  <p class="kick">Section 3.2</p>
+  <h2 class="sec-h">GPU architecture generations</h2>
+  <p>A GPU name has a letter for the architecture and a number for the model within it. The H100 replaced the A100, the H200 is a bigger Hopper, and the B200 supersedes both. Bigger numbers mean larger, more powerful and more expensive parts. New architectures arrive every one to two years, and most deployments today use Lovelace, Hopper or Blackwell.</p>
+  <div class="fig" id="f-gen">
+    <p class="fig-cap">Fig. B · Spec comparison · FP8 dense compute, memory and bandwidth, normalized to the largest · select a GPU</p>
+    <div id="gen-cmp"></div>
+  </div>
+  <h3 class="sub-h">The generations</h3>
+  <div class="cards">
+    <div class="card lift"><h4>3.2.1 Hopper</h4><p>Released 2022. Added FP8, which doubles Tensor Core speed and halves bandwidth per value. H100 and H200 are the most widely used inference GPUs and enable FlashAttention 3.</p></div>
+    <div class="card lift"><h4>3.2.2 Ada Lovelace</h4><p>A graphics oriented counterpart to Hopper with FP8 but no NVLink. L4 suits small embedding and vision models. L40 is rarely the right pick, since MIG slices of an H100 beat it.</p></div>
+    <div class="card lift"><h4>3.2.3 Blackwell</h4><p>Released 2024. Adds FP4 and microscaling formats (MXFP8, MXFP4, NVFP4). B200 and B300 are the new gold standard for demanding models and video, with FlashAttention 4.</p></div>
+    <div class="card lift"><h4>3.2.4 Rubin</h4><p>Due in 2026 with HBM4 for decode and a CPX chip built for compute bound prefill. Wait for real benchmarks, as software support takes about a year to mature. Feynman follows in 2028.</p></div>
+    <div class="card lift"><h4>3.2.5 Grace and Vera CPUs</h4><p>ARM CPUs paired with GPUs on superchips. NVLink chip to chip gives up to 900 GB/s, so offloading LoRA weights or KV caches to CPU memory is much faster than over PCIe. Vera replaces Grace with Rubin.</p></div>
+  </div>
+</section>
+
+<section class="sec" id="s33" data-nav="3.3 Instances" data-chip="3.3">
+  <p class="kick">Section 3.3</p>
+  <h2 class="sec-h">Instances</h2>
+  <p>The cloud allocates GPUs as instances: a virtual machine with GPUs, host CPUs and memory, storage, networking and the interconnect. Providers build these differently, and any component can be the bottleneck. Even one GPU can differ, since A100 SXM has about 5 percent more memory bandwidth than the PCIe version.</p>
+  <h3 class="sub-h">3.3.1 Multi-GPU instances</h3>
+  <p>A node holds eight GPUs. NVLink connects GPUs one to one, up to 1800 GB/s on Blackwell and 900 GB/s on Hopper, and NVSwitch gives all to all connectivity inside the node. Beyond eight GPUs you need InfiniBand, up to 400 Gb/s per network card, still the fastest node to node option, ahead of Ethernet at 100 Gb/s. NVL72 racks link 72 Blackwell GPUs with NVLink for the largest models.</p>
+  <div class="fig" id="f-link">
+    <p class="fig-cap">Fig. B · Interconnect bandwidth · GB/s, per link · hover a row</p>
+    <div id="link-bars"></div>
+    <div class="read" id="link-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <h3 class="sub-h">3.3.2 Multi-instance GPUs</h3>
+  <p>Sometimes the GPU is too big for the model. MIG splits an A100, H100, H200 or B200 into up to seven slices, each with its own share of compute, memory and host resources. Seven slices because an H100 has 132 SMs, which does not divide evenly, so seven equal slices are made and a few SMs idle. A small model like a 3B parameter TTS can use two MIG instances more efficiently than a whole GPU.</p>
+  <div class="fig" id="f-mig">
+    <p class="fig-cap">Fig. C · Slicing an H100 · derived from 132 SMs · choose slices</p>
+    <div id="mig-calc"></div>
+  </div>
+</section>
+
+<section class="sec" id="s34" data-nav="3.4 Other accelerators" data-chip="3.4">
+  <p class="kick">Section 3.4</p>
+  <h2 class="sec-h">Other datacenter accelerators</h2>
+  <p>NVIDIA leads, but many companies build alternatives: AMD MI350, AWS Inferentia and Trainium, Cerebras WSE-3, Etched Sohu, Furiosa RNGD, Google TPU, Groq LPU, Qualcomm Cloud AI 100 Ultra and SambaNova RDU. Each bets on a specific edge.</p>
+  <div class="fig" id="f-acc">
+    <p class="fig-cap">Fig. B · Where challengers compete · select a bet</p>
+    <div id="acc-tabs"></div>
+  </div>
+</section>
+
+<section class="sec" id="s35" data-nav="3.5 Local inference" data-chip="3.5">
+  <p class="kick">Section 3.5</p>
+  <h2 class="sec-h">Local inference</h2>
+  <p>Local, edge or on-device inference runs the model on the user's own hardware. It has four advantages: no network latency, independence from connectivity and server load, better privacy, and no GPU bill for the developer. It also has four weaknesses: modest hardware, thermal limits, a fragmented support matrix and battery drain. Design for the median user's device, not the enthusiast's.</p>
+  <h3 class="sub-h">3.5.1 Desktop inference</h3>
+  <p>Apple's unified memory trades speed for capacity, which shows in the highest end options. Tools such as Ollama and llama.cpp run aggressively quantized 100B plus models, MoE models help because a request touches few weights, and ComfyUI is popular for image generation.</p>
+  <div class="fig" id="f-desk">
+    <p class="fig-cap">Fig. B · Capacity versus speed · normalized to the larger value · select a machine</p>
+    <div id="desk-cmp"></div>
+  </div>
+  <h3 class="sub-h">3.5.2 Mobile inference</h3>
+  <p>Mobile makes up most on-device workloads today, using Google's AI Edge SDK and ML Kit with Gemini Nano and Gemma, or Apple's Foundation Models and Core ML. Even high-end phones struggle beyond one or two billion parameters, so latency sensitive tasks such as transcription and speech synthesis fit best.</p>
+</section>
+
+<section class="sec" id="map" data-nav="Chapter map" data-chip="Map">
+  <p class="kick">Summary</p>
+  <h2 class="sec-h">Chapter map</h2>
+  <p>The whole chapter on one page. Each branch is a section, and each leaf is the idea to remember from it.</p>
+  <div class="fig" id="f-map">
+    <p class="fig-cap">Fig. M · Chapter 3 at a glance · synthesis</p>
+    <div class="scroll"><svg id="map-svg" viewBox="0 0 720 500" role="img" aria-label="Mind map of chapter 3."></svg></div>
+  </div>
+</section>
+
+<section class="sec" id="recall" data-nav="Recall check" data-chip="Recall">
+  <p class="kick">Retention</p>
+  <h2 class="sec-h">Recall check</h2>
+  <p>Answer in your head first, then select the card. Coming back to these in a week works better than rereading the chapter.</p>
+  <div class="fcs" id="fcs"></div>
+</section>
+
+</main>
+</div>
+<footer id="notes-foot"></footer>
+<script src="/notes/assets/library.js"></script>
+<script src="/notes/assets/notes.js"></script>
+<script src="/notes/inference-engineering/ch3/figures.js"></script>
+</body>
+</html>

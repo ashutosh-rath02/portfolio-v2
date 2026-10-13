@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Inference | Inference Engineering notes</title>
+<meta name="description" content="Animated visual notes for chapter 0 of Inference Engineering by Philip Kiely: what inference is and the three layers of a production system.">
+<meta property="og:title" content="Inference | Inference Engineering notes">
+<meta property="og:description" content="Animated visual notes for chapter 0 of Inference Engineering by Philip Kiely.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.ashutoshrath.me/notes/inference-engineering/ch0">
+<link rel="canonical" href="https://www.ashutoshrath.me/notes/inference-engineering/ch0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/notes/assets/notes.css">
+<script>try{var t=localStorage.getItem('notes-theme');if(t!=='light'&&t!=='dark'){t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark')t=''}if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-page="chapter" data-book="inference-engineering" data-chapter="0">
+<header id="notes-top"></header>
+<div class="shell">
+<aside class="rail" id="notes-rail" aria-label="Contents"></aside>
+<main>
+
+<section class="sec" id="overview" data-nav="Overview" data-chip="Overview" style="padding-top:56px">
+  <p class="eyebrow">Chapter 0 · Philip Kiely, Inference Engineering</p>
+  <h1 class="display">Inference</h1>
+  <p class="lede">Training teaches a model. Inference is everything that happens after, when real users and real traffic hit the weights. For generative AI that second phase has become an engineering discipline of its own, built from three layers: runtime, infrastructure and tooling.</p>
+  <div class="fig" id="f-life">
+    <p class="fig-cap">Fig. A · Where inference sits · synthesis · select a stage</p>
+    <div class="scroll"><svg id="life" viewBox="0 0 720 150" role="group" aria-label="Lifecycle of a model from data to training to inference to users"></svg></div>
+    <div class="read" id="life-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+
+  <ol class="summary" aria-label="The chapter in parts">
+    <li><a href="#life">Phase</a><span>Training learns the weights once. Inference serves them continuously, and it is where the product meets the world.</span></li>
+    <li><a href="#kinds">Kinds</a><span>Classic ML inference is cheap and simple. Generative inference needs real systems work.</span></li>
+    <li><a href="#layers">Layers</a><span>Runtime makes one GPU fast, infrastructure scales it out, tooling keeps humans productive.</span></li>
+    <li><a href="#book">Book</a><span>The rest of the book walks up the stack, from models and hardware to production.</span></li>
+  </ol>
+</section>
+
+<section class="sec" id="kinds" data-nav="Two kinds of inference" data-chip="Kinds">
+  <p class="kick">Context</p>
+  <h2 class="sec-h">Classic versus generative inference</h2>
+  <p>Inference has always existed. A fraud model scoring a payment or a gradient boosted tree ranking search results is inference too. Those models are small, run happily on CPUs, and rarely need more than a container and a load balancer.</p>
+  <p>Generative models changed the shape of the problem. They are large, they need GPUs, and each request does a lot of work, so the gap between a naive deployment and a tuned one is measured in multiples of cost and latency.</p>
+  <div class="fig" id="f-kinds">
+    <p class="fig-cap">Fig. B · Effort by kind of model · illustrative · select a kind</p>
+    <div id="kinds-cmp"></div>
+  </div>
+</section>
+
+<section class="sec" id="layers" data-nav="Three layers" data-chip="Layers">
+  <p class="kick">The stack</p>
+  <h2 class="sec-h">Runtime, infrastructure, tooling</h2>
+  <p>The book organizes inference engineering into three layers. Each one answers a different question, and each one fails in a different way. Select a layer to see what lives in it.</p>
+  <div class="fig" id="f-layers">
+    <p class="fig-cap">Fig. C · The three layers · synthesis</p>
+    <div class="scroll"><svg id="layers" viewBox="0 0 720 300" role="group" aria-label="Three layers: tooling on top, infrastructure in the middle, runtime at the bottom"></svg></div>
+    <div class="read" id="layers-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <h3 class="sub-h">How infrastructure grows</h3>
+  <p>Infrastructure work arrives in a predictable order. Autoscaling comes first. Past a few hundred GPUs you need capacity in several regions or clouds. Those pools start as silos, and the end state is a single global pool that routes each request to the best place, which also helps with reliability and distance to users.</p>
+  <div class="fig" id="f-grow">
+    <p class="fig-cap">Fig. D · Infrastructure growth path · synthesis · press play</p>
+    <div class="scroll"><svg id="grow" viewBox="0 0 720 150" role="group" aria-label="Autoscaling, multi-region, silos, global pool"></svg></div>
+    <div class="row" style="margin-top:12px"><button class="btn" type="button" id="grow-play">Play the path</button></div>
+    <div class="read" id="grow-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+</section>
+
+<section class="sec" id="book" data-nav="Map of the book" data-chip="Book">
+  <p class="kick">Orientation</p>
+  <h2 class="sec-h">How the book is laid out</h2>
+  <p>Each following chapter climbs one rung. Select a chapter to see its job.</p>
+  <div class="fig" id="f-book">
+    <p class="fig-cap">Fig. E · Book structure · synthesis</p>
+    <div id="book-bars"></div>
+    <div class="read" id="book-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+</section>
+
+<section class="sec" id="map" data-nav="Chapter map" data-chip="Map">
+  <p class="kick">Summary</p>
+  <h2 class="sec-h">Chapter map</h2>
+  <p>The whole chapter on one page. Each branch is a section, and each leaf is the idea to remember from it.</p>
+  <div class="fig" id="f-map">
+    <p class="fig-cap">Fig. M · Chapter 0 at a glance · synthesis</p>
+    <div class="scroll"><svg id="map-svg" viewBox="0 0 720 380" role="img" aria-label="Mind map of chapter 0."></svg></div>
+  </div>
+</section>
+
+<section class="sec" id="recall" data-nav="Recall check" data-chip="Recall">
+  <p class="kick">Retention</p>
+  <h2 class="sec-h">Recall check</h2>
+  <p>Answer in your head first, then select the card. Coming back to these in a week works better than rereading the chapter.</p>
+  <div class="fcs" id="fcs"></div>
+</section>
+
+</main>
+</div>
+<footer id="notes-foot"></footer>
+<script src="/notes/assets/library.js"></script>
+<script src="/notes/assets/notes.js"></script>
+<script src="/notes/inference-engineering/ch0/figures.js"></script>
+</body>
+</html>

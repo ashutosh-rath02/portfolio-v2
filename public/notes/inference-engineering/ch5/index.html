@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Techniques | Inference Engineering notes</title>
+<meta name="description" content="Animated visual notes for chapter 5 of Inference Engineering by Philip Kiely: quantization, speculation, caching, parallelism and disaggregation.">
+<meta property="og:title" content="Techniques | Inference Engineering notes">
+<meta property="og:description" content="Animated visual notes for chapter 5 of Inference Engineering by Philip Kiely.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.ashutoshrath.me/notes/inference-engineering/ch5">
+<link rel="canonical" href="https://www.ashutoshrath.me/notes/inference-engineering/ch5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/notes/assets/notes.css">
+<script>try{var t=localStorage.getItem('notes-theme');if(t!=='light'&&t!=='dark'){t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark')t=''}if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body data-page="chapter" data-book="inference-engineering" data-chapter="5">
+<header id="notes-top"></header>
+<div class="shell">
+<aside class="rail" id="notes-rail" aria-label="Contents"></aside>
+<main>
+
+<section class="sec" id="overview" data-nav="Overview" data-chip="Overview" style="padding-top:56px">
+  <p class="eyebrow">Chapter 5 · Philip Kiely, Inference Engineering</p>
+  <h1 class="display">Techniques</h1>
+  <p class="lede">Five families of techniques make inference faster and cheaper. Each one attacks a specific bottleneck, each has a situation where it pays off, and each has a cost. Only quantization can change output quality, and the others are lossless.</p>
+  <div class="fig" id="f-five">
+    <p class="fig-cap">Fig. A · Five techniques, five targets · synthesis · select a technique</p>
+    <div class="scroll"><svg id="five" viewBox="0 0 720 150" role="group" aria-label="Quantization, speculation, caching, parallelism, disaggregation"></svg></div>
+    <div class="read" id="five-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+
+  <ol class="summary" aria-label="The chapter in parts">
+    <li><a href="#s51">5.1</a><span>Lower precision speeds prefill and decode by about 30 to 50 percent per step. Test quality before shipping.</span></li>
+    <li><a href="#s52">5.2</a><span>Draft several tokens, verify them in one pass. It helps decode latency at low batch sizes.</span></li>
+    <li><a href="#s53">5.3</a><span>Reuse the KV cache across requests, and put changing text late in the prompt.</span></li>
+    <li><a href="#s54">5.4</a><span>Use tensor parallelism for latency in a node, expert parallelism for MoE throughput.</span></li>
+    <li><a href="#s55">5.5</a><span>Split prefill from decode only at large scale, with big models and prefill heavy traffic.</span></li>
+  </ol>
+</section>
+
+<section class="sec" id="intro" data-nav="Principles" data-chip="Intro">
+  <p class="kick">Before 5.1</p>
+  <h2 class="sec-h">How to think about techniques</h2>
+  <p>The principle from earlier still holds: the more constraints you add, the better the performance. A second one joins it. The more traffic you have, the more optimization you can afford. Wide parallelism, KV aware routing and dynamic disaggregation only make sense with many GPUs serving one model, often across nodes.</p>
+  <p>Tuning is never finished, because real traffic keeps changing. Finding the right mix takes patient experiments, and the author recalls an engineer who tried 77 configurations with a script before finding one that doubled tokens per second. Techniques can help each other, as KV cache quantization eases the disaggregation bottleneck, or conflict, as bigger batches take compute away from speculation. The goal is a balanced set that beats the sum of its parts.</p>
+</section>
+
+<section class="sec" id="s51" data-nav="5.1 Quantization" data-chip="5.1">
+  <p class="kick">Section 5.1</p>
+  <h2 class="sec-h">Quantization</h2>
+  <p>Models are trained in a native format, usually BF16 or FP16. Post-training quantization converts weights and other values to a lower precision. Halving precision speeds both phases: prefill runs on Tensor Cores with twice the FLOPS, and decode loads half as many bytes per value. Overhead means about 30 to 50 percent gain per precision step for LLMs, not a full double.</p>
+  <div class="fig" id="f-q">
+    <p class="fig-cap">Fig. B · What a precision step buys · illustrative, using the book's 30 to 50 percent rule · choose a precision</p>
+    <div id="q-calc"></div>
+  </div>
+  <p>The risk is that precision errors compound. The book shows pi squared and cubed at three precisions, and the errors grow with every operation.</p>
+  <div class="fig" id="f-pi">
+    <p class="fig-cap">Fig. C · Errors compound · from the book's pi example · choose a precision</p>
+    <div id="pi-calc"></div>
+  </div>
+  <h3 class="sub-h">5.1.1 Number formats</h3>
+  <p>The useful inference formats are 16, 8 and 4 bit. A format has a precision, a type (integer or floating point) and a scale factor that maps back to higher precision. Floating point wins for inference because its exponent gives a wider dynamic range, which represents the outlier values that matter. Granularity is how many values share one scale factor: per tensor, per channel or per block. Finer granularity protects outliers but costs storage and compute. MXFP8 and MXFP4 use a scale per 32 values, and NVIDIA's NVFP4 uses blocks of 16 plus a global scale. Integer and aggressive dynamic formats suit local inference, for example GGUF, but production should stick to floating point. FP8 and MXFP8 are the sweet spot.</p>
+  <h3 class="sub-h">5.1.2 Approaches</h3>
+  <p>Larger models are less sensitive. Quantization can happen during training, as with GPT-OSS in MXFP4, or after, which is all you can do with finished open weights. NVIDIA TensorRT Model Optimizer is a leading tool and works with all three engines. Components differ in sensitivity, from least to most:</p>
+  <div class="fig" id="f-sens">
+    <p class="fig-cap">Fig. D · Sensitivity to quantization · synthesis from the book's ranking · hover a row</p>
+    <div id="sens-bars"></div>
+    <div class="read" id="sens-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <h3 class="sub-h">5.1.3 Measuring quality</h3>
+  <p>The bar is no perceptible quality loss, meaning a difference that looks like run to run noise. Use three checks: perplexity, standard benchmarks like MMLU or SWE-bench, and your own evals. Quantization is a scale. FP8 instead of FP4, or weights only, trades less for less risk.</p>
+</section>
+
+<section class="sec" id="s52" data-nav="5.2 Speculative decoding" data-chip="5.2">
+  <p class="kick">Section 5.2</p>
+  <h2 class="sec-h">Speculative decoding</h2>
+  <p>Decode leaves compute idle while it waits for weights. Speculation uses that spare compute. A speculator drafts tokens, the target model verifies them in one pass, accepts the valid ones and adds one token of its own, producing N plus 1 tokens per pass where N is the accepted count. Verification is cheap, like checking a finished sudoku. It improves tokens per second but not time to first token.</p>
+  <p>Gains depend on draft token cost, draft length and the acceptance rate. Acceptance is high early in a draft and falls later, and one rejected token discards all that follow, so short high-confidence drafts win. Higher temperature lowers acceptance. At high batch sizes compute is saturated and speculation must switch off.</p>
+  <div class="fig" id="f-spec">
+    <p class="fig-cap">Fig. B · Tokens per forward pass · illustrative model with a constant acceptance rate · adjust draft length and acceptance</p>
+    <div id="spec-calc"></div>
+  </div>
+  <div class="fig" id="f-alg">
+    <p class="fig-cap">Fig. C · Speculation algorithms · select one</p>
+    <div id="alg-tabs"></div>
+  </div>
+</section>
+
+<section class="sec" id="s53" data-nav="5.3 Caching" data-chip="5.3">
+  <p class="kick">Section 5.3</p>
+  <h2 class="sec-h">Caching</h2>
+  <p>Every engine caches the KV within a request. The bigger win is reusing it across requests.</p>
+  <h3 class="sub-h">5.3.1 Prefix caching</h3>
+  <p>If two prompts share a prefix such as "Weather in", the second skips prefill for those tokens. This is why APIs charge less for cache hit input tokens. It pays off with long system prompts, code context, retrieved documents and multi-turn chats. The prefix ends at the first token that differs, so any change early in the prompt wipes out the savings. Put novel tokens as late as possible. Reuse from the middle of prompts is active research, for example CacheBlend and LMCache.</p>
+  <div class="fig" id="f-prefix">
+    <p class="fig-cap">Fig. B · Why order matters · illustrative · move the first changing token</p>
+    <div id="prefix-calc"></div>
+  </div>
+  <h3 class="sub-h">5.3.2 Where to store the KV cache</h3>
+  <p>The cache fills fast. Engines let you set its share of memory, for example 80 percent of the VRAM left after weights, which is 64 GB on a B200 with 100 GB used. When it overflows, offload to slower tiers, in descending speed. Dynamo's KV Block Manager moves blocks between levels, keeping hot blocks near the GPU.</p>
+  <div class="fig" id="f-tier">
+    <p class="fig-cap">Fig. C · KV cache tiers · ordering only, not to scale · hover a row</p>
+    <div id="tier-bars"></div>
+    <div class="read" id="tier-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <h3 class="sub-h">5.3.3 Cache-aware routing</h3>
+  <p>With many replicas, route a returning conversation to the replica that already holds its cache, instead of only balancing load. A global cache on networked storage lets any replica reach any cached sequence and survives autoscaling, though a replica with a hot GPU cache still answers faster.</p>
+  <h3 class="sub-h">5.3.4 Long context</h3>
+  <p>A context becomes long when its KV cache causes problems, often past 32K, 64K or 128K tokens. Attention can then become the main consumer of VRAM. General remedies are FlashAttention, PagedAttention and chunked prefill, which splits long inputs into pieces run alongside decode. Benchmark with very long inputs. If one GPU is still not enough, parallelize.</p>
+</section>
+
+<section class="sec" id="s54" data-nav="5.4 Model parallelism" data-chip="5.4">
+  <p class="kick">Section 5.4</p>
+  <h2 class="sec-h">Model parallelism</h2>
+  <p>Frontier models do not fit on one GPU. In FP8 each billion parameters needs about a gigabyte, so DeepSeek-V3.1 at 671B overflows a single B200. Even four B200s with 720 GB hold the weights but leave no room for the KV cache, so a full node of eight is needed. The limit on scaling is communication between GPUs, which is far slower than VRAM, hence topology aware parallelism.</p>
+  <div class="fig" id="f-par">
+    <p class="fig-cap">Fig. B · Three kinds of parallelism · select one</p>
+    <div id="par-tabs"></div>
+  </div>
+  <h3 class="sub-h">5.4.1 Tensor parallelism</h3>
+  <p>The default for multi-GPU inference. Each layer is split across GPUs, and results are combined with an all-reduce before the next layer. Inside an NVLink node that cost is small, and raising TP improves per-user tokens per second for large models.</p>
+  <h3 class="sub-h">5.4.2 Expert parallelism</h3>
+  <p>Experts are divided across GPUs, so with 128 experts on EP8 each GPU hosts 16. Each token takes as long, but the system handles more tokens at once. It needs less communication than TP, since the small router is replicated, so it scales across nodes. Many deployments mix TP and EP.</p>
+  <div class="fig" id="f-ep">
+    <p class="fig-cap">Fig. C · Experts per GPU · 128 expert model · choose the EP degree</p>
+    <div id="ep-calc"></div>
+  </div>
+  <h3 class="sub-h">5.4.3 Multi-node inference</h3>
+  <p>Over InfiniBand, TP is too chatty. For dense models use TP inside each node and PP between nodes, such as TP8PP2. For MoE you can also use EP16. TP8PP2 gives lower latency per user and EP16 higher total throughput. Unless the model and cache force you across nodes, extra hardware is better spent on replicas or disaggregation.</p>
+  <div class="fig" id="f-pick">
+    <p class="fig-cap">Fig. D · Picking a layout · synthesis · choose a situation</p>
+    <div id="pick-cmp"></div>
+  </div>
+</section>
+
+<section class="sec" id="s55" data-nav="5.5 Disaggregation" data-chip="5.5">
+  <p class="kick">Section 5.5</p>
+  <h2 class="sec-h">Disaggregation</h2>
+  <p>Prefill is compute bound and sets TTFT, and decode is memory bound and sets TPS. Under heavy load on one node they compete. Disaggregation puts them on separate engines: the prefill engine builds the KV cache and the first token, ships the cache over the interconnect, and the decode engine produces the rest. Each engine can be tuned separately, for example prefill uses lower TP than decode. With conditional disaggregation the decode engine first checks whether the prompt is short or already cached and prefills locally if so, which suits real traffic better.</p>
+  <div class="fig" id="f-dis">
+    <p class="fig-cap">Fig. B · Conditional disaggregation · synthesis · press play</p>
+    <div class="scroll"><svg id="dis" viewBox="0 0 720 300" role="group" aria-label="Request checked by decode engine, then local prefill or remote prefill and KV transfer"></svg></div>
+    <div class="row" style="margin-top:12px"><button class="btn" type="button" id="dis-play">Follow a long request</button></div>
+    <div class="read" id="dis-read" aria-live="polite"><h4></h4><p></p></div>
+  </div>
+  <h3 class="sub-h">5.5.2 When to use it</h3>
+  <p>It needs many GPUs and engineering work, so use it only when three things hold. Check your own situation:</p>
+  <div class="fig" id="f-when">
+    <p class="fig-cap">Fig. C · Should you disaggregate · synthesis · set your situation</p>
+    <div id="when-calc"></div>
+  </div>
+  <h3 class="sub-h">5.5.3 Dynamic disaggregation with Dynamo</h3>
+  <p>Dynamo adds a prefill queue, conditional routing on thresholds, and NIXL based KV transfer that can transpose cache layouts when TP differs. Engine counts are written xPyD, so 5P3D means five prefill and three decode engines, adjustable at runtime. New bottlenecks appear: the prefill queue and decode KV capacity. Tune the local prefill threshold and xPyD, and add KV quantization or offloading for capacity.</p>
+  <div class="fig" id="f-xpyd">
+    <p class="fig-cap">Fig. D · Balancing xPyD · illustrative · choose engine counts</p>
+    <div id="xpyd-calc"></div>
+  </div>
+</section>
+
+<section class="sec" id="map" data-nav="Chapter map" data-chip="Map">
+  <p class="kick">Summary</p>
+  <h2 class="sec-h">Chapter map</h2>
+  <p>The whole chapter on one page. Each branch is a section, and each leaf is the idea to remember from it.</p>
+  <div class="fig" id="f-map">
+    <p class="fig-cap">Fig. M · Chapter 5 at a glance · synthesis</p>
+    <div class="scroll"><svg id="map-svg" viewBox="0 0 720 620" role="img" aria-label="Mind map of chapter 5."></svg></div>
+  </div>
+</section>
+
+<section class="sec" id="recall" data-nav="Recall check" data-chip="Recall">
+  <p class="kick">Retention</p>
+  <h2 class="sec-h">Recall check</h2>
+  <p>Answer in your head first, then select the card. Coming back to these in a week works better than rereading the chapter.</p>
+  <div class="fcs" id="fcs"></div>
+</section>
+
+</main>
+</div>
+<footer id="notes-foot"></footer>
+<script src="/notes/assets/library.js"></script>
+<script src="/notes/assets/notes.js"></script>
+<script src="/notes/inference-engineering/ch5/figures.js"></script>
+</body>
+</html>
