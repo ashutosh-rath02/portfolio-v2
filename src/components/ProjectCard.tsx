@@ -20,7 +20,7 @@ function Projects() {
       <div className="mt-8">
         <Link
           href="/projects"
-          className="text-sm font-medium underline-offset-4 hover:underline"
+          className="text-sm font-medium text-brand underline-offset-4 hover:underline"
         >
           View all projects →
         </Link>

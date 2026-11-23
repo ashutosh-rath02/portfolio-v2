@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import ThemeToggle from "./ThemeToggle";
 
 const links = [
   { href: "/projects", label: "Projects" },
@@ -8,23 +9,26 @@ const links = [
 
 const Navbar = () => {
   return (
-    <nav className="flex w-full items-center justify-between py-4">
+    <nav className="sticky top-0 z-20 -mx-4 flex w-[calc(100%+2rem)] items-center justify-between border-b border-transparent bg-background/80 px-4 py-3 backdrop-blur md:-mx-8 md:w-[calc(100%+4rem)] md:px-8">
       <Link href="/" className="text-lg font-semibold tracking-tight">
         AR
       </Link>
       <ul className="flex items-center gap-6 text-sm text-muted-foreground">
         {links.map((l) => (
           <li key={l.href}>
-            <Link href={l.href} className="hover:text-foreground">
+            <Link href={l.href} className="transition-colors hover:text-brand">
               {l.label}
             </Link>
           </li>
         ))}
         <li>
           {/* Static pages served from public/notes, so use a plain anchor */}
-          <a href="/notes" className="hover:text-foreground">
+          <a href="/notes" className="transition-colors hover:text-brand">
             Notes
           </a>
+        </li>
+        <li>
+          <ThemeToggle />
         </li>
       </ul>
     </nav>

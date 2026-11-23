@@ -2,11 +2,11 @@
 import type { Project } from "../../content/projects";
 
 const linkClass =
-  "text-sm font-medium text-foreground underline-offset-4 hover:underline";
+  "text-sm font-medium text-brand underline-offset-4 hover:underline";
 
 export default function ProjectItem({ project }: { project: Project }) {
   return (
-    <article className="group flex flex-col rounded-xl border bg-card p-5 transition-colors hover:border-foreground/30">
+    <article className="group flex flex-col rounded-xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-brand/60 hover:shadow-lg hover:shadow-brand/5">
       {project.img && (
         <img
           src={project.img}
@@ -15,7 +15,7 @@ export default function ProjectItem({ project }: { project: Project }) {
           className="mb-4 h-40 w-full rounded-lg object-cover"
         />
       )}
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+      <p className="text-xs font-medium uppercase tracking-wider text-brand">
         {project.category}
       </p>
       <h3 className="mt-1 text-lg font-semibold">{project.title}</h3>
@@ -26,7 +26,7 @@ export default function ProjectItem({ project }: { project: Project }) {
         {project.tech.map((t) => (
           <li
             key={t}
-            className="rounded-md bg-secondary px-2 py-0.5 text-xs text-secondary-foreground"
+            className="rounded-md border bg-transparent px-2 py-0.5 text-xs text-muted-foreground"
           >
             {t}
           </li>

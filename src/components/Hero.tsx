@@ -13,21 +13,21 @@ export default function HeroSection() {
           Hi, I&apos;m Ashutosh Rath.
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-          Full stack developer from NIT Rourkela. I build web apps and AI
-          tooling: agent debuggers, test harnesses, retrieval systems and the
-          products around them.
+          Software engineer from NIT Rourkela. I build AI agents and the
+          tooling around them: debuggers, test harnesses, agent memory and
+          retrieval, plus tools for hardware design and embedded systems.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <Link
             href="/resume"
             target="_blank"
-            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+            className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
           >
             Resume
           </Link>
           <Link
             href="/projects"
-            className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-secondary"
+            className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:border-brand hover:text-brand"
           >
             Projects
           </Link>

@@ -38,6 +38,22 @@ export const projectsData: Project[] = [
     tech: ["TypeScript", "Observability", "LLM Agents"],
   },
   {
+    title: "Traceforge",
+    category: "AI agent",
+    featured: true,
+    description:
+      "An AI agent that designs, edits and reviews KiCad circuit boards from plain English. It picks parts, writes the schematic, places and routes the PCB, then runs KiCad ERC and DRC and fixes what they report.",
+    tech: ["Python", "KiCad", "Agents", "EDA"],
+  },
+  {
+    title: "LiveClip",
+    category: "AI app",
+    featured: true,
+    description:
+      "Turns Twitch, Kick and YouTube streams into ready-to-post Shorts. Watches chat to clip moments seconds after they happen, and outputs 9:16 and 16:9 versions with captions, hook titles and AI-written post text.",
+    tech: ["Python", "ffmpeg", "Whisper", "OpenAI"],
+  },
+  {
     title: "Schemantic",
     category: "Multi-agent system",
     featured: true,
@@ -119,6 +135,53 @@ export const projectsData: Project[] = [
   },
 
   // ---- Apps and tools ----
+  {
+    title: "Olive Green",
+    category: "Interactive fiction",
+    description:
+      "Murder mysteries you solve across a small fictional internet. Case 01 is set during Durga Puja in Kolkata. Answers and locked messages never reach the browser, and progress lives in a signed cookie.",
+    url: "https://olive-green.in",
+    tech: ["Next.js", "TypeScript", "Server actions"],
+  },
+  {
+    title: "Threadnote",
+    category: "Collaboration",
+    description:
+      "A document and collaboration hub for Discord-connected teams. Documents, sharing, tasks and discussions through Discord commands and a web library, with GitHub as the home for published Markdown.",
+    tech: ["TypeScript", "Discord", "Cloudflare D1/R2", "PostgreSQL"],
+  },
+  {
+    title: "NavApp",
+    category: "Robotics",
+    description:
+      "An independent Android app for the UGV Beast platform with its own camera, sensors, mapping and ESP32 connection. Includes a log-odds occupancy grid and ARCore depth scanning.",
+    github: "https://github.com/ashutosh-rath02/navapp",
+    tech: ["Kotlin", "Jetpack Compose", "ARCore", "ESP32"],
+  },
+  {
+    title: "json2toon",
+    category: "Developer tools",
+    description:
+      "A fast JSON to TOON converter in Rust with a web UI, following the TOON v2.0 spec for token-efficient LLM input.",
+    github: "https://github.com/ashutosh-rath02/json2toon",
+    tech: ["Rust", "WebAssembly", "LLM tokens"],
+  },
+  {
+    title: "Corrective RAG",
+    category: "AI app",
+    description:
+      "A Corrective RAG question-answering app over documents using LangGraph and multiple LLM providers, with vector search and relevance grading.",
+    github: "https://github.com/ashutosh-rath02/corrective-rag",
+    tech: ["Python", "LangGraph", "Streamlit", "RAG"],
+  },
+  {
+    title: "Timelens",
+    category: "Desktop app",
+    description:
+      "An Electron app that tracks your computer usage with screen captures and uses AI to analyze your activity patterns.",
+    github: "https://github.com/ashutosh-rath02/timelens",
+    tech: ["Electron", "JavaScript", "AI"],
+  },
   {
     title: "whatsapp-agent",
     category: "AI agent",

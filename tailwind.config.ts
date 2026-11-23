@@ -20,6 +20,7 @@ const config = {
     },
     extend: {
       colors: {
+        brand: "hsl(var(--brand))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -74,7 +75,7 @@ const config = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        sans: ["Lato", ...fontFamily.sans],
+        sans: ["var(--font-sans)", ...fontFamily.sans],
       },
     },
   },

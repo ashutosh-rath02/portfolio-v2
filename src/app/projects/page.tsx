@@ -36,8 +36,8 @@ function AllProjects() {
             onClick={() => setSelected(tech)}
             className={`rounded-full border px-3 py-1 text-sm transition-colors ${
               selected === tech
-                ? "border-foreground bg-foreground text-background"
-                : "text-muted-foreground hover:text-foreground"
+                ? "border-brand bg-brand text-background"
+                : "text-muted-foreground hover:border-brand hover:text-brand"
             }`}
           >
             {tech ?? "All"}
