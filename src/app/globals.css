@@ -77,34 +77,8 @@
   }
 }
 
-* {
-  font-family: "Lato", sans-serif;
-}
-
-.heading {
-  font-size: 2rem;
-  margin-top: 1rem;
-  font-weight: bold;
-}
-
-@media (min-width: 640px) {
-  .heading {
-    font-size: 2rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .heading {
-    font-size: 2.5rem;
-    margin-top: 8rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .heading {
-    margin-top: 2rem;
-    font-size: 1.875rem;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 /* Width */

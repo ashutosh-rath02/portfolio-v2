@@ -1,20 +1,20 @@
-import { HoverEffect } from "./card-hover-effect";
 import { icons } from "../../content/icons";
+import SectionHeading from "./SectionHeading";
 
 export function TechStack() {
   return (
-    <div className="flex flex-col items-center md:items-start">
-      <span className="heading">My Tech Stack🧑‍💻</span>
-      <div className="bg-gradient-to-r from-purple-500 to-indigo-500 h-1 w-16 mb-4"></div>
-
-      <HoverEffect
-        items={icons.map((icon) => ({
-          title: icon.name,
-          link: "#",
-          icon: icon.svg,
-          color: icon.color,
-        }))}
-      />
-    </div>
+    <section className="mt-24 w-full">
+      <SectionHeading title="Tech stack" />
+      <ul className="flex flex-wrap gap-2">
+        {icons.map((icon) => (
+          <li
+            key={icon.name}
+            className="rounded-full border px-3 py-1 text-sm text-muted-foreground"
+          >
+            {icon.name}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

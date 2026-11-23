@@ -1,137 +1,54 @@
-"use client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { assets } from "@/utils/asset-utils";
-import { type Framework, frameworks } from "@/utils/framework-utils";
-import { cn } from "@/utils/tailwind-utils";
-import { FrameworkRotation } from "@/components/framework-rotation";
-import { Poppins } from "next/font/google";
-import HeroNumbers from "./HeroNumbers";
-import HireMeButton from "./HireMeButton";
-
-const poppins = Poppins({
-  weight: "700",
-  subsets: ["latin"],
-});
+import Link from "next/link";
 
 export default function HeroSection() {
-  const [currentFramework, setCurrentFramework] = useState<Framework>(
-    frameworks[0]
-  );
-  const [showBackground, setShowBackground] = useState(false);
-
-  useEffect(() => {
-    let currentIndex = 0;
-    const rotateFrameworks = () => {
-      setCurrentFramework(frameworks[currentIndex]);
-      currentIndex = (currentIndex + 1) % frameworks.length;
-    };
-    const intervalId = setInterval(rotateFrameworks, 2000);
-    return () => clearInterval(intervalId);
-  }, []);
-
-  useEffect(() => {
-    setShowBackground(true);
-  }, []);
-
   return (
-    <main>
-      {/* Background color */}
-      <div
-        className={cn(
-          "fixed inset-0 transition-color delay-100 duration-700 opacity-25 -z-10"
-          // {
-          //   "bg-purple-300": currentFramework === "next",
-          //   "bg-sky-300": currentFramework === "typescript",
-          //   "bg-yellow-300": currentFramework === "chrome",
-          //   "bg-teal-300": currentFramework === "tailwind",
-          //   "bg-blue-300": currentFramework === "react",
-          //   "bg-green-600": currentFramework === "mongodb",
-          //   "bg-orange-400": currentFramework === "linux",
-          //   "bg-red-300": currentFramework === "mobile",
-          //   "bg-neutral-300": currentFramework === "desktop",
-          //   "bg-green-900": currentFramework === "node",
-          //   "bg-lime-300": currentFramework === "supabase",
-          //   "bg-blue-900": currentFramework === "docker",
-          // }
-        )}
-      />
-      {/* <div
-        style={{
-          backgroundSize: "50px",
-          backgroundImage: `url(${assets.square})`,
-        }}
-        className="fixed inset-0 opacity-30 -z-10"
-      />
-      <Image
-        width={1200}
-        height={1200}
-        role="presentation"
-        alt="gradient background"
-        className="fixed inset-0 w-screen h-screen object-cover -z-10"
-        src={assets.gradient}
-      />
-      <div
-        className={cn(
-          "bg-black fixed inset-0 transition-opacity duration-1000 -z-10",
-          !showBackground ? "opacity-100" : "opacity-0"
-        )}
-      /> */}
-      {/* Content */}
-      <div className="max-w-7xl mt-20 mx-auto px-4 sm:px-0">
-        <div className="relative z-10">
-          {/* Content */}
-          <div className="flex flex-col md:flex-row items-center">
-            {/* Badge */}
-            <div className="absolute -top-2 md:top-2 left-6 mt-[-1.5rem] ml-[-1.5rem] flex items-center border-2 px-3 md:px-4 rounded-3xl py-1 md:py-2">
-              <div className="w-4 h-4 rounded-full bg-green-500 animate-pulse mr-2"></div>
-              <p className="text-green-500 font-bold">Available for work</p>
-            </div>
-            {/* Text */}
-            <div className="w-full md:w-1/2 text-left flex flex-col items-start justify-center md mb-8 md:mb-0">
-              <h1
-                className={`text-3xl md:text-4xl leading-snug mb-4 ${poppins.className}`}
-              >
-                Transforming Ideas into Reality
-              </h1>
-              <div className="text-xl md:text-3xl max-w-3xl mb-8 leading-loose md:leading-[3.5rem] font-semibold">
-                Crafting elegant solutions with{" "}
-                <FrameworkRotation currentFramework={currentFramework} /> and
-                beyond.
-              </div>
-              <HireMeButton />
-            </div>
-            {/* Image */}
-            <div className="w-full md:w-1/2 p-4 flex items-end justify-center md:ml-28">
-              <Image
-                alt="Portfolio"
-                className={cn(
-                  "rounded-lg border-4",
-                  "w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl",
-                  {
-                    "border-purple-300": currentFramework === "next",
-                    "border-sky-300": currentFramework === "typescript",
-                    "border-yellow-300": currentFramework === "chrome",
-                    "border-teal-300": currentFramework === "tailwind",
-                    "border-blue-300": currentFramework === "react",
-                    "border-green-300": currentFramework === "mongodb",
-                    "border-orange-400": currentFramework === "linux",
-                    "border-red-300": currentFramework === "mobile",
-                    "border-neutral-300": currentFramework === "desktop",
-                    "border-green-900": currentFramework === "node",
-                    "border-lime-300": currentFramework === "supabase",
-                    "border-blue-900": currentFramework === "docker",
-                  }
-                )}
-                src="https://res.cloudinary.com/dhnkuonev/image/upload/v1718546215/portfolio/unnamed_wxefuz.jpg"
-                width={350}
-                height={350}
-              />
-            </div>
-          </div>
+    <section className="mt-16 md:mt-24 flex w-full flex-col-reverse items-start gap-8 md:flex-row md:items-center md:justify-between">
+      <div className="max-w-xl">
+        <p className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="h-2 w-2 rounded-full bg-green-500" />
+          Available for work
+        </p>
+        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+          Hi, I&apos;m Ashutosh Rath.
+        </h1>
+        <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+          Full stack developer from NIT Rourkela. I build web apps and AI
+          tooling: agent debuggers, test harnesses, retrieval systems and the
+          products around them.
+        </p>
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Link
+            href="/resume"
+            target="_blank"
+            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+          >
+            Resume
+          </Link>
+          <Link
+            href="/projects"
+            className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-secondary"
+          >
+            Projects
+          </Link>
+          <a
+            href="https://github.com/ashutosh-rath02"
+            target="_blank"
+            rel="noreferrer"
+            className="px-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            GitHub ↗
+          </a>
         </div>
       </div>
-      <HeroNumbers />
-    </main>
+      <Image
+        alt="Ashutosh Rath"
+        src="https://res.cloudinary.com/dhnkuonev/image/upload/v1718546215/portfolio/unnamed_wxefuz.jpg"
+        width={160}
+        height={160}
+        className="h-32 w-32 rounded-full border object-cover md:h-40 md:w-40"
+        priority
+      />
+    </section>
   );
 }

@@ -1,74 +1,31 @@
-"use client";
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { IconBriefcase } from "@tabler/icons-react";
+import SectionHeading from "./SectionHeading";
 
 const ExperienceSection = () => {
-  const [selectedCompany, setSelectedCompany] = useState(experiences[0]);
-
   return (
-    <section className="mt-24 mx-auto min-h-[28rem]">
-      <span className="heading">Work Experience🥼</span>
-      <div className="bg-gradient-to-r from-purple-500 to-indigo-500 h-1 w-16 mb-4"></div>
-      <div className="flex flex-col md:flex-row rounded-lg overflow-hidden shadow-lg gap-12 mt-12">
-        <div className="flex-shrink-0 w-full md:w-1/3">
-          {experiences.map((exp, index) => (
-            <motion.div
-              key={index}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.95 }}
-              className={`p-4 cursor-pointer transition-transform duration-300 ${
-                selectedCompany === exp
-                  ? "bg-gray-200 text-black dark:bg-gray-800 dark:text-gray-300"
-                  : "hover:bg-gray-200 dark:hover:bg-gray-800 text-black dark:text-gray-300"
-              } border-b border-gray-300 dark:border-gray-600 mb-4 md:mb-0`}
-              onClick={() => setSelectedCompany(exp)}
-            >
-              <div className="flex items-center space-x-4">
-                <IconBriefcase className="h-6 w-6" />
-                <div>
-                  <h3 className="text-md font-semibold">{exp.company}</h3>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        <div className="flex-grow mt-4 md:mt-0 md:ml-8 p-6 shadow-lg rounded-lg border border-gray-300 dark:border-gray-600">
-          <div className="flex items-center space-x-4 mb-4">
-            <IconBriefcase className="h-10 w-10 text-blue-500" />
-            <div>
-              <h3 className="text-2xl font-semibold">{selectedCompany.role}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                <strong>Period:</strong> {selectedCompany.period}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                <strong>Location:</strong> {selectedCompany.location}
-              </p>
+    <section className="mt-24 w-full">
+      <SectionHeading title="Experience" />
+      <ol className="space-y-8 border-l pl-6">
+        {experiences.map((exp) => (
+          <li key={exp.company} className="relative">
+            <span className="absolute -left-[29px] top-2 h-2 w-2 rounded-full bg-foreground" />
+            <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
+              <h3 className="font-semibold">
+                {exp.role} <span className="text-muted-foreground">at</span>{" "}
+                {exp.company}
+              </h3>
+              <p className="text-sm text-muted-foreground">{exp.period}</p>
             </div>
-          </div>
-          <div
-            className="text-sm text-gray-700 dark:text-gray-400"
-            style={{ maxHeight: "20rem", overflowY: "auto" }}
-          >
-            <strong>Description:</strong>
-            <ul className="list-disc pl-4 mt-2">
-              {selectedCompany.descriptionPoints.map((point, index) => (
-                <li key={index}>{point}</li>
+            <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-muted-foreground">
+              {exp.descriptionPoints.map((point) => (
+                <li key={point}>{point}</li>
               ))}
             </ul>
-          </div>
-
-          <div className="text-sm text-gray-700 dark:text-gray-400 mt-4">
-            <strong>Skills:</strong>{" "}
-            {selectedCompany.skills.map((skill, index) => (
-              <span key={index}>
-                {index > 0 ? ", " : ""}
-                <strong>{skill}</strong>
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              {exp.skills.join(" · ")}
+            </p>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 };
@@ -77,7 +34,7 @@ const experiences = [
   {
     role: "Software Engineer",
     company: "TheAware.AI",
-    period: "Jan 2024 - Present · 5 mos",
+    period: "Jan 2024 - Present",
     location: "Durgapur, West Bengal, India",
     descriptionPoints: [
       "Developing AI-driven applications and products.",
@@ -90,7 +47,7 @@ const experiences = [
   {
     role: "Full Stack Developer",
     company: "Anatech Global Consultancy",
-    period: "May 17, 2024 - July 31, 2024 · 3 mos",
+    period: "May 17, 2024 - July 31, 2024",
     location: "Remote",
     descriptionPoints: [
       "Leading various projects, leveraging full-stack development skills.",
@@ -106,7 +63,7 @@ const experiences = [
   {
     role: "Full Stack Developer",
     company: "LesGo",
-    period: "Dec 2023 - Mar 2024 · 4 mos",
+    period: "Dec 2023 - Mar 2024",
     location: "Bengaluru, Karnataka, India · Remote",
     descriptionPoints: [
       "Instrumental in developing LesGo's flagship product from inception to launch.",
@@ -125,7 +82,7 @@ const experiences = [
   {
     role: "Frontend Developer",
     company: "Stealth Mode AI Startup",
-    period: "Oct 2023 - Dec 2023 · 3 mos",
+    period: "Oct 2023 - Dec 2023",
     location: "Remote",
     descriptionPoints: [
       "Developed a robust admin panel and engaging customer interface.",
