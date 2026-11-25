@@ -15,9 +15,9 @@ const fontSans = FontSans({
 export const metadata: Metadata = {
   title: "Ashutosh | Portfolio",
   description:
-    "Hey, I'm Ashutosh Rath, a Full Stack Developer from India. I love building web applications and solving problems. Check out my portfolio to know more about me.",
+    "Ashutosh Rath, an AI engineer from India building LLM agents, agent tooling, evals and full stack products. See my projects and experience.",
   keywords:
-    "NIT Rourkela, Portfolio, Ashutosh Rath, Web Developer, Software Engineer, Full Stack Developer, React Developer, Next.js Developer, Tailwind CSS Developer, JavaScript Developer, TypeScript Developer, Node.js Developer, MongoDB Developer, Express Developer, React Developer, Redux Developer,Go Developer, GoLang developer, Devops, devops engineer, backend developer, Web Developer in India, Web Developer in Odisha, Web Developer in Bhubaneswar, Web Developer in Rourkela, Web Developer in Bangalore, Web Developer in Bengaluru, Web Developer in Karnataka, Web Developer in India, Web Developer in Asia, Web Developer in World, Web Developer in USA, Web Developer in Canada, Web Developer in Australia, Web Developer in UK, Web Developer in Europe, Web Developer in Africa, Web Developer in South America, Web Developer in North America, Web Developer in Antarctica, Web Developer in Mars, Web Developer in Jupiter, Web Developer in Saturn, Web Developer in Pluto, Web Developer in Neptune, Web Developer in Uranus, Web Developer in Venus, Web Developer in Mercury, Web Developer in Sun, Web Developer in Moon, Web Developer in Earth, Web Developer in Milky Way, Web Developer in Universe, Web Developer in Multiverse, Web Developer in Metaverse, Web Developer in Hyperspace, Web Developer in Hypertime. Freelancer, Internship, Hiring",
+    "Ashutosh Rath, AI Engineer, LLM Agents, Agentic AI, RAG, Evals, Python, TypeScript, Full Stack Developer, NIT Rourkela, Portfolio",
   openGraph: {
     url: "https://www.ashutoshrath.me",
     type: "website",
@@ -47,7 +47,7 @@ export default function RootLayout({
         <meta property="og:title" content="Ashutosh | Portfolio" />
         <meta
           property="og:description"
-          content="Hey, I'm Ashutosh Rath, a Full Stack Developer from India. I love building web applications and solving problems. Check out my portfolio to know more about me."
+          content="Ashutosh Rath, an AI engineer from India building LLM agents, agent tooling, evals and full stack products. See my projects and experience."
         />
         <meta
           property="og:image"
@@ -60,7 +60,7 @@ export default function RootLayout({
         <meta name="twitter:title" content="Ashutosh's Portfolio" />
         <meta
           name="twitter:description"
-          content="Hey, I'm Ashutosh Rath, a Full Stack Developer from India. I love building web applications and solving problems. Check out my portfolio to know more about me."
+          content="Ashutosh Rath, an AI engineer from India building LLM agents, agent tooling, evals and full stack products. See my projects and experience."
         />
         <meta
           name="twitter:image"

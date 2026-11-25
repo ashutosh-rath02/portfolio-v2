@@ -32,9 +32,33 @@ const ExperienceSection = () => {
 
 const experiences = [
   {
+    role: "Software Developer",
+    company: "AI-native engineering platform startup",
+    period: "Sep 2026 - Present",
+    location: "India",
+    descriptionPoints: [
+      "Build agentic developer tooling: an orchestration layer that runs coding agents in isolated lanes per work item, with live monitoring and steering.",
+      "Built a model-based systems engineering toolchain (SysML v2 compiler, CLI and CI gates) that generates code and configuration from a single model and traces test evidence back to requirement IDs.",
+      "Designed an evaluation and qualification framework for AI-enabled systems.",
+      "Trained and evaluated a small calibrated model that returns typed judgments instead of free-form text, and built a distributed compute harness for ML workloads.",
+      "Set up an AI agent that designs and reviews hardware (PCB) projects, and prototyped computer vision for retail checkout.",
+      "Built robotics software for an autonomous ground vehicle: an Android app with ARCore localization, mapping and a microcontroller control link.",
+    ],
+    skills: [
+      "LLM Agents",
+      "Python",
+      "SysML v2",
+      "C++",
+      "TypeScript",
+      "Evals",
+      "Computer Vision",
+      "CI/CD",
+    ],
+  },
+  {
     role: "Software Engineer",
     company: "TheAware.AI",
-    period: "Jan 2024 - Present",
+    period: "Jan 2024",
     location: "Durgapur, West Bengal, India",
     descriptionPoints: [
       "Developing AI-driven applications and products.",

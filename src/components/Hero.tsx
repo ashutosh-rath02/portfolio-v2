@@ -13,9 +13,9 @@ export default function HeroSection() {
           Hi, I&apos;m Ashutosh Rath.
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-          Software engineer from NIT Rourkela. I build AI agents and the
-          tooling around them: debuggers, test harnesses, agent memory and
-          retrieval, plus tools for hardware design and embedded systems.
+          AI engineer from NIT Rourkela. I build LLM agents and the tooling
+          around them: debuggers, test harnesses, agent memory, retrieval and
+          evals, plus agentic tools for hardware design and robotics.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <Link
