@@ -58,7 +58,7 @@ const experiences = [
   {
     role: "Software Engineer",
     company: "TheAware.AI",
-    period: "Jan 2024",
+    period: "Jan 2024 - Jun 2026",
     location: "Durgapur, West Bengal, India",
     descriptionPoints: [
       "Developing AI-driven applications and products.",
